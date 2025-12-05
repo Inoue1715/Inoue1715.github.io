@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Titan Pentest Tracker</title>
+<style>
+    :root {
+        --bg-color: #0b0c15;
+        --glass-panel: rgba(20, 25, 40, 0.7);
+        --glass-border: rgba(255, 255, 255, 0.1);
+        --primary: #6c5ce7;
+        --accent: #00cec9;
+        --success: #00b894;
+        --danger: #d63031;
+        --text: #ffffff;
+        --text-muted: #b2bec3;
+    }
+
+    body {
+        margin: 0; padding: 0;
+        font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        background-color: var(--bg-color);
+        color: var(--text);
+        height: 100vh;
+        overflow: hidden;
+    }
+
+    /* --- ANIMATED BACKGROUND --- */
+    .nebula-bg {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: linear-gradient(125deg, #0b0c15, #1e0b2b, #091c2b);
+        background-size: 400% 400%;
+        animation: gradientBG 15s ease infinite;
+        z-index: -2;
+    }
+    
+    .grid-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background-image: 
+            linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+        background-size: 50px 50px;
+        z-index: -1;
+    }
+
+    @keyframes gradientBG {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+
+    /* --- LAYOUT --- */
+    .app-container {
+        display: flex; flex-direction: column; height: 100%;
+        max-width: 1200px; margin: 0 auto; padding: 20px; box-sizing: border-box;
+    }
+
+    /* --- HEADER --- */
+    .header {
+        display: flex; justify-content: space-between; align-items: center;
+        background: var(--glass-panel);
+        backdrop-filter: blur(12px);
+        border: 1px solid var(--glass-border);
+        padding: 20px 30px;
+        border-radius: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+    }
+
+    .header-info h1 { margin: 0; font-size: 1.5rem; letter-spacing: 1px; background: linear-gradient(to right, #fff, #a29bfe); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .header-info p { margin: 5px 0 0; font-size: 0.85rem; color: var(--text-muted); }
+
+    .progress-wrapper { text-align: right; width: 300px; }
+    .progress-bar-bg { background: rgba(255,255,255,0.1); height: 10px; border-radius: 5px; overflow: hidden; margin-top: 5px; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent)); width: 0%; transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+    .progress-text { font-size: 0.9rem; font-weight: bold; color: var(--accent); }
+
+    /* --- VIEWS CONTAINER (Map vs Detail) --- */
+    .viewport {
+        flex: 1; position: relative; overflow: hidden;
+    }
+
+    .view {
+        position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+        transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55), opacity 0.4s ease;
+        overflow-y: auto;
+        padding-bottom: 50px;
+    }
+
+    /* Hide scrollbar */
+    .view::-webkit-scrollbar { width: 8px; }
+    .view::-webkit-scrollbar-track { background: transparent; }
+    .view::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 4px; }
+
+    /* --- MAP GRID --- */
+    .map-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 20px;
+        padding: 10px;
+    }
+
+    .phase-card {
+        background: var(--glass-panel);
+        border: 1px solid var(--glass-border);
+        border-radius: 16px;
+        padding: 25px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative; overflow: hidden;
+    }
+
+    .phase-card:hover { transform: translateY(-5px); border-color: var(--accent); box-shadow: 0 10px 20px rgba(0, 206, 201, 0.2); }
+    .phase-card.locked { opacity: 0.5; filter: grayscale(0.8); pointer-events: none; }
+    
+    .phase-icon { font-size: 2.5rem; margin-bottom: 15px; }
+    .phase-num { font-size: 0.7rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 2px; }
+    .phase-title { font-size: 1.2rem; margin: 5px 0 10px; font-weight: 700; }
+    .phase-progress { font-size: 0.8rem; color: var(--accent); font-weight: bold; display: flex; align-items: center; gap: 5px; }
+    
+    /* Small progress ring inside card */
+    .mini-bar { width: 100%; height: 4px; background: rgba(255,255,255,0.1); margin-top: 15px; border-radius: 2px; }
+    .mini-fill { height: 100%; background: var(--success); width: 0%; border-radius: 2px; }
+
+    /* --- DETAIL VIEW (THE LIST) --- */
+    #detail-view { transform: translateX(100%); opacity: 0; }
+    #detail-view.active { transform: translateX(0); opacity: 1; }
+    #map-view.inactive { transform: translateX(-20%); opacity: 0; }
+
+    .detail-header { display: flex; align-items: center; margin-bottom: 20px; }
+    .back-btn {
+        background: rgba(255,255,255,0.1); border: none; color: white;
+        padding: 10px 20px; border-radius: 30px; cursor: pointer;
+        font-weight: bold; margin-right: 20px; transition: 0.2s;
+        display: flex; align-items: center; gap: 8px;
+    }
+    .back-btn:hover { background: var(--accent); color: #000; }
+
+    .detail-title h2 { margin: 0; font-size: 2rem; }
+    .detail-title span { color: var(--text-muted); font-size: 0.9rem; letter-spacing: 1px; text-transform: uppercase;}
+
+    .checklist-grid {
+        display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+        gap: 15px;
+    }
+
+    .task-item {
+        background: rgba(30, 30, 50, 0.6);
+        border: 1px solid rgba(255,255,255,0.05);
+        padding: 15px; border-radius: 12px;
+        display: flex; align-items: center;
+        transition: 0.2s; cursor: pointer;
+    }
+    .task-item:hover { background: rgba(255,255,255,0.1); }
+    .task-item.checked { border-color: var(--success); background: rgba(0, 184, 148, 0.1); }
+    .task-item.checked span { color: var(--text-muted); text-decoration: line-through; }
+
+    .checkbox {
+        width: 24px; height: 24px; border: 2px solid var(--text-muted); border-radius: 6px;
+        margin-right: 15px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+        transition: 0.2s;
+    }
+    .task-item.checked .checkbox { background: var(--success); border-color: var(--success); }
+    .task-item.checked .checkbox::after { content: '✓'; color: #fff; font-weight: bold; }
+
+    /* --- COUNTDOWN --- */
+    .countdown-pill {
+        background: rgba(214, 48, 49, 0.2); color: #ff7675;
+        padding: 5px 15px; border-radius: 20px; font-size: 0.8rem;
+        font-weight: bold; border: 1px solid rgba(214, 48, 49, 0.3);
+        margin-left: 10px; animation: pulse 2s infinite;
+    }
+    @keyframes pulse { 0% { opacity: 0.7; } 50% { opacity: 1; } 100% { opacity: 0.7; } }
+
+</style>
+</head>
+<body>
+
+<div class="nebula-bg"></div>
+<div class="grid-overlay"></div>
+
+<div class="app-container">
+    
+    <div class="header">
+        <div class="header-info">
+            <div style="display:flex; align-items:center;">
+                <h1>CAREER DASHBOARD</h1>
+                <div class="countdown-pill" id="countdown">Loading...</div>
+            </div>
+            <p>Target: Infrastructure Penetration Tester ($600+) • Deadline: June 2026</p>
+        </div>
+        <div class="progress-wrapper">
+            <div style="display:flex; justify-content:space-between;">
+                <span class="progress-text" style="color:white; font-size:0.7rem;">OVERALL COMPLETION</span>
+                <span class="progress-text" id="global-percent">0%</span>
+            </div>
+            <div class="progress-bar-bg">
+                <div class="progress-fill" id="global-bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="viewport">
+        
+        <div id="map-view" class="view">
+            <div class="map-grid" id="card-container">
+                </div>
+        </div>
+
+        <div id="detail-view" class="view">
+            <div class="detail-header">
+                <button class="back-btn" onclick="closeDetail()">◀ RETURN TO MAP</button>
+                <div class="detail-title">
+                    <span id="dt-cat">PHASE 1</span>
+                    <h2 id="dt-title">Lab Setup</h2>
+                </div>
+            </div>
+            <div class="checklist-grid" id="task-container">
+                </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // --- 1. THE DATA (7 Phases, ~15 Tasks Each) ---
+    const phases = [
+        {
+            id: 0, title: "Infrastructure (The Lab)", icon: "🏗️",
+            tasks: [
+                "Download VMware Workstation Pro or VirtualBox",
+                "Download Windows Server 2019 ISO",
+                "Download Windows 10 Enterprise ISO",
+                "Download Kali Linux ISO",
+                "Configure NAT Network (ensure isolation)",
+                "Install Win Server 2019 VM",
+                "Configure Static IP on Server",
+                "Install Active Directory Domain Services Role",
+                "Promote Server to Domain Controller (DC)",
+                "Create 'Corp.local' Forest",
+                "Create 3 Organizational Units (IT, HR, Sales)",
+                "Create 5 Dummy Users (with weak passwords)",
+                "Install Windows 10 VM",
+                "Join Windows 10 VM to the Domain",
+                "Install Splunk Free on a separate VM for logs"
+            ]
+        },
+        {
+            id: 1, title: "Foundations & Theory", icon: "🧠",
+            tasks: [
+                "Study Kerberos: AS-REQ & AS-REP flow",
+                "Study Kerberos: TGS-REQ & TGS-REP flow",
+                "Study NTLMv2 Handshake process",
+                "Learn LDAP Syntax (CN, DC, OU queries)",
+                "Review 'Core Components' in your Dashboard",
+                "Master PowerShell: Get-Help & Get-Member",
+                "Master PowerShell: Pipeline usage (|)",
+                "Master PowerShell: Filtering (Where-Object)",
+                "Study Windows Permissions (ACLs/ACEs)",
+                "Understand 'Token Manipulation' theory",
+                "Understand 'Pass-the-Hash' theory",
+                "Understand 'Golden Ticket' theory",
+                "Read RFC 1510 (Kerberos) - Summary only",
+                "Setup Note-taking app (Obsidian/Notion)",
+                "Create a 'Cheat Sheet' for common ports"
+            ]
+        },
+        {
+            id: 2, title: "Weaponization", icon: "⚔️",
+            tasks: [
+                "Install VS Code on Kali/Attack Box",
+                "Learn 'Execution Policy' Bypasses",
+                "Write 'Hello World' in C#",
+                "Compile C# to .exe using csc.exe",
+                "Obfuscate a basic PowerShell script",
+                "Setup Python Virtual Environment",
+                "Write a basic Python Port Scanner",
+                "Install Impacket Toolkit",
+                "Install Bloodhound & Neo4j",
+                "Install Rubeus (compile from source)",
+                "Install Mimikatz (compile from source)",
+                "Install PowerSploit / PowerView",
+                "Setup a C2 Framework (Covenant or Sliver)",
+                "Create a Stageless Payload",
+                "Test Payload on Victim VM (verify shell)"
+            ]
+        },
+        {
+            id: 3, title: "Enumeration (Recon)", icon: "🔍",
+            tasks: [
+                "Run Nmap scan against Domain Controller",
+                "Identify SMB Signing status",
+                "Run SharpHound (Bloodhound Collector)",
+                "Analyze Bloodhound Graph for 'Shortest Path'",
+                "Find 'Sessions' (Where are admins logged in?)",
+                "Use PowerView: Get-NetDomain",
+                "Use PowerView: Get-NetUser",
+                "Use PowerView: Get-NetComputer",
+                "Use PowerView: Find-LocalAdminAccess",
+                "Enumerate SMB Shares (Read/Write access)",
+                "Check for 'Unconstrained Delegation' computers",
+                "Check for 'Constrained Delegation' users",
+                "Check for AS-REP Roasting candidates",
+                "Check Description fields for passwords",
+                "Identify GPOs (Group Policy Objects)"
+            ]
+        },
+        {
+            id: 4, title: "Red Team (The Attack)", icon: "🚩",
+            tasks: [
+                "Perform AS-REP Roasting Attack",
+                "Crack AS-REP hash with Hashcat (Mode 18200)",
+                "Perform Kerberoasting Attack (Rubeus)",
+                "Crack TGS hash with Hashcat (Mode 13100)",
+                "Dump LSASS Memory (Mimikatz)",
+                "Extract NTLM Hashes",
+                "Execute Pass-the-Hash (PtH) to move laterally",
+                "Execute Over-Pass-the-Hash (PtK)",
+                "Forge a Silver Ticket (Service persistence)",
+                "Forge a Golden Ticket (Domain dominance)",
+                "Execute DCSync Attack (Get all hashes)",
+                "Perform Token Impersonation",
+                "Exploit Constrained Delegation",
+                "Exploit Unconstrained Delegation (The Printer Bug)",
+                "Create a 'Skeleton Key' persistence"
+            ]
+        },
+        {
+            id: 5, title: "Blue Team (Defense)", icon: "🛡️",
+            tasks: [
+                "Enable 'Audit Kerberos Service Ticket Operations'",
+                "Enable 'Audit Logon Events'",
+                "Trigger Kerberoasting Attack again",
+                "Find Event ID 4769 in Event Viewer",
+                "Identify encryption type 0x17 (RC4) in logs",
+                "Find Event ID 4624 (Logon success)",
+                "Detect Golden Ticket usage (Event 4624/4672)",
+                "Configure Splunk to ingest Windows Logs",
+                "Write a Splunk query for 'Mimikatz' artifacts",
+                "Identify 'Suspicious Process Creation' (Event 4688)",
+                "Detect PowerShell 'DownloadString' usage",
+                "Review 'Purple Team' fix: Disable RC4",
+                "Review 'Purple Team' fix: LAPS implementation",
+                "Review 'Purple Team' fix: Protected Users Group",
+                "Create a Defense Report for your simulated client"
+            ]
+        },
+        {
+            id: 6, title: "CRTP & Career", icon: "🎓",
+            tasks: [
+                "Purchase CRTP Course/Lab Access",
+                "Watch all CRTP Course Videos",
+                "Complete all CRTP Lab Flags",
+                "Write a Mock Pentest Report for the Lab",
+                "Schedule the CRTP Exam",
+                "Take the 24h Exam",
+                "Submit Exam Report",
+                "Update Resume with 'Certified Red Team Professional'",
+                "Prepare Portfolio (Sanitized Reports)",
+                "Practice 'Tell me about yourself'",
+                "Practice Technical Q&A (AD specific)",
+                "Apply to 10 Jobs per week",
+                "Pass HR Screen",
+                "Pass Technical Interview",
+                "Accept Offer ($600+)"
+            ]
+        }
+    ];
+
+    // --- 2. STATE MANAGEMENT ---
+    let progressState = JSON.parse(localStorage.getItem('titan_tracker_v1')) || {}; // { phaseId: [taskId, taskId] }
+
+    const mapView = document.getElementById('map-view');
+    const detailView = document.getElementById('detail-view');
+    const cardContainer = document.getElementById('card-container');
+    const taskContainer = document.getElementById('task-container');
+    const globalBar = document.getElementById('global-bar');
+    const globalText = document.getElementById('global-percent');
+
+    // --- 3. INIT ---
+    function init() {
+        renderMap();
+        updateGlobalProgress();
+        startCountdown();
+    }
+
+    // --- 4. RENDER MAP ---
+    function renderMap() {
+        cardContainer.innerHTML = '';
+        
+        phases.forEach(phase => {
+            const completedTasks = progressState[phase.id] || [];
+            const totalTasks = phase.tasks.length;
+            const percent = Math.round((completedTasks.length / totalTasks) * 100);
+            
+            const card = document.createElement('div');
+            card.className = 'phase-card';
+            card.onclick = () => openDetail(phase.id);
+
+            card.innerHTML = `
+                <div class="phase-icon">${phase.icon}</div>
+                <div class="phase-num">PHASE ${phase.id + 1}</div>
+                <div class="phase-title">${phase.title}</div>
+                <div class="phase-progress">
+                    <span>${percent}% COMPLETE</span>
+                </div>
+                <div class="progress-bar-bg" style="height:6px; background:rgba(255,255,255,0.05);">
+                    <div class="mini-fill" style="width:${percent}%"></div>
+                </div>
+            `;
+            
+            cardContainer.appendChild(card);
+        });
+    }
+
+    // --- 5. RENDER DETAIL ---
+    let currentPhaseId = null;
+
+    function openDetail(id) {
+        currentPhaseId = id;
+        const phase = phases[id];
+        
+        // Update Headers
+        document.getElementById('dt-cat').innerText = `PHASE ${id + 1}`;
+        document.getElementById('dt-title').innerText = phase.title;
+        
+        // Render Tasks
+        taskContainer.innerHTML = '';
+        const completed = progressState[id] || [];
+
+        phase.tasks.forEach((task, index) => {
+            const div = document.createElement('div');
+            const isChecked = completed.includes(index);
+            
+            div.className = `task-item ${isChecked ? 'checked' : ''}`;
+            div.onclick = () => toggleTask(id, index);
+            
+            div.innerHTML = `
+                <div class="checkbox"></div>
+                <span>${task}</span>
+            `;
+            taskContainer.appendChild(div);
+        });
+
+        // Animations
+        mapView.classList.add('inactive');
+        setTimeout(() => {
+            mapView.style.display = 'none';
+            detailView.style.display = 'block';
+            setTimeout(() => detailView.classList.add('active'), 10);
+        }, 400);
+    }
+
+    function closeDetail() {
+        detailView.classList.remove('active');
+        setTimeout(() => {
+            detailView.style.display = 'none';
+            mapView.style.display = 'block';
+            setTimeout(() => {
+                mapView.classList.remove('inactive');
+                renderMap(); // Re-render to show updated mini-bars
+            }, 10);
+        }, 400);
+    }
+
+    // --- 6. LOGIC ---
+    function toggleTask(phaseId, taskId) {
+        if (!progressState[phaseId]) progressState[phaseId] = [];
+        
+        const arr = progressState[phaseId];
+        if (arr.includes(taskId)) {
+            progressState[phaseId] = arr.filter(i => i !== taskId);
+        } else {
+            arr.push(taskId);
+        }
+        
+        localStorage.setItem('titan_tracker_v1', JSON.stringify(progressState));
+        
+        // Update UI immediately without closing
+        const tasks = taskContainer.children;
+        const taskEl = tasks[taskId];
+        if (progressState[phaseId].includes(taskId)) {
+            taskEl.classList.add('checked');
+        } else {
+            taskEl.classList.remove('checked');
+        }
+
+        updateGlobalProgress();
+    }
+
+    function updateGlobalProgress() {
+        let totalTasks = 0;
+        let totalDone = 0;
+
+        phases.forEach(p => {
+            totalTasks += p.tasks.length;
+            if (progressState[p.id]) {
+                totalDone += progressState[p.id].length;
+            }
+        });
+
+        const percent = Math.round((totalDone / totalTasks) * 100);
+        globalBar.style.width = percent + '%';
+        globalText.innerText = percent + '%';
+    }
+
+    function startCountdown() {
+        const target = new Date("2026-06-01").getTime();
+        setInterval(() => {
+            const now = new Date().getTime();
+            const dist = target - now;
+            const days = Math.floor(dist / (1000 * 60 * 60 * 24));
+            document.getElementById('countdown').innerText = days + " DAYS LEFT";
+        }, 1000);
+    }
+
+    // Init
+    init();
+
+</script>
+</body>
+</html>
