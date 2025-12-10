@@ -1,573 +1,607 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>TITAN v29 // AWAKENING</title>
-<link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
-<style>
-    :root {
-        --bg: #000;
-        --matrix: #00ff41;
-        --dim: #003b00;
-        --alert: #ff0000;
-        --text: #e0ffe0;
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autocom Logistics Hub | East Africa Division</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        /* =========================================
+           1. PREMIUM THEME CONFIGURATION
+           ========================================= */
+        :root {
+            /* Brand Palette - Deep Ocean Navy */
+            --bg-deep: #050b14;
+            --bg-card: rgba(16, 33, 56, 0.6);
+            --primary: #0066cc;
+            --primary-glow: #00ccff;
+            --accent: #00f2ff;
+            
+            /* Status Colors */
+            --st-success: #00e676;
+            --st-warning: #ffb300;
+            --st-danger: #ff3366;
+            --st-info: #2979ff;
+            
+            /* Text */
+            --text-main: #ffffff;
+            --text-sec: #94a3b8;
+            
+            /* Effects */
+            --glass-border: 1px solid rgba(255, 255, 255, 0.08);
+            --glass-blur: blur(16px);
+            --shadow-card: 0 15px 35px rgba(0, 0, 0, 0.4);
+            --anim-speed: 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        /* =========================================
+           2. GLOBAL RESET & BASE
+           ========================================= */
+        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-deep);
+            color: var(--text-main);
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        /* Animated Background Canvas */
+        #particles {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: -1;
+            background: radial-gradient(circle at 50% 10%, #0d1b2e 0%, #02060b 100%);
+        }
+
+        h1, h2, h3, h4 { font-family: 'Space Grotesk', sans-serif; letter-spacing: -0.5px; }
+
+        /* =========================================
+           3. UI COMPONENTS
+           ========================================= */
+        .container { max-width: 1400px; margin: 0 auto; padding: 0 30px; position: relative; z-index: 2; }
+
+        /* HEADER */
+        header {
+            padding: 25px 0;
+            border-bottom: var(--glass-border);
+            background: rgba(5, 11, 20, 0.8);
+            backdrop-filter: var(--glass-blur);
+            position: sticky; top: 0; z-index: 100;
+        }
         
-        --p-low: #e74c3c;
-        --p-med: #f1c40f;
-        --p-high: #00ff41;
-    }
+        .nav-wrap { display: flex; justify-content: space-between; align-items: center; }
+        
+        .brand { display: flex; align-items: center; gap: 15px; }
+        .brand-icon {
+            width: 40px; height: 40px;
+            background: var(--primary);
+            border-radius: 8px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem;
+            box-shadow: 0 0 20px rgba(0, 102, 204, 0.4);
+        }
+        .brand-text h2 { font-size: 1.4rem; font-weight: 700; line-height: 1; }
+        .brand-text span { font-size: 0.8rem; color: var(--text-sec); letter-spacing: 2px; text-transform: uppercase; }
 
-    * { box-sizing: border-box; user-select: none; }
-    body { margin:0; padding:0; font-family:'VT323', monospace; background:var(--bg); color:var(--text); height:100vh; overflow:hidden; }
+        /* SEARCH BAR */
+        .search-container { position: relative; width: 350px; }
+        .search-container input {
+            width: 100%;
+            padding: 12px 20px 12px 45px;
+            background: rgba(255,255,255,0.05);
+            border: var(--glass-border);
+            border-radius: 50px;
+            color: white;
+            font-family: inherit;
+            transition: var(--anim-speed);
+        }
+        .search-container input:focus {
+            background: rgba(255,255,255,0.1);
+            border-color: var(--primary-glow);
+            box-shadow: 0 0 15px rgba(0, 204, 255, 0.2);
+        }
+        .search-icon { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: var(--text-sec); }
 
-    /* --- BOOT SEQUENCE --- */
-    #boot-screen {
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: #000; z-index: 9999;
-        display: flex; align-items: center; justify-content: center; /* Centered like the movie */
-        flex-direction: column;
-        cursor: pointer;
-    }
-    .type-text { font-size: 2rem; color: var(--matrix); text-shadow: 0 0 10px var(--matrix); }
-    .cursor { animation: blink 1s infinite; }
-    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
-    .skip-hint { position: absolute; bottom: 20px; color: #333; font-size: 0.8rem; }
+        /* =========================================
+           4. CALCULATOR DASHBOARD
+           ========================================= */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: 1.2fr 1.8fr;
+            gap: 30px;
+            margin: 50px 0;
+            animation: slideUp 0.8s ease-out;
+        }
 
-    /* --- CANVAS & FX --- */
-    #matrix-canvas { position:fixed; top:0; left:0; width:100%; height:100%; z-index:-1; opacity:0.15; }
-    .scanlines { position:fixed; top:0; left:0; width:100%; height:100%; background:linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06)); background-size:100% 2px, 3px 100%; pointer-events:none; z-index:900; }
+        /* Common Glass Card Style */
+        .glass-panel {
+            background: var(--bg-card);
+            backdrop-filter: var(--glass-blur);
+            border: var(--glass-border);
+            border-radius: 20px;
+            padding: 35px;
+            box-shadow: var(--shadow-card);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        /* Subtle glowing top border */
+        .glass-panel::before {
+            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, var(--primary-glow), transparent);
+            opacity: 0.5;
+        }
 
-    /* --- APP LAYOUT --- */
-    .app { display:none; flex-direction:column; height:100%; max-width:1600px; margin:0 auto; padding:20px; z-index:10; position:relative; animation: fadeIn 2s forwards; }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .panel-title { display: flex; align-items: center; gap: 10px; margin-bottom: 25px; color: var(--accent); }
+        .panel-title i { filter: drop-shadow(0 0 8px var(--accent)); }
 
-    /* --- HUD --- */
-    .hud { 
-        display:flex; justify-content:space-between; align-items:center; 
-        border:1px solid var(--dim); background:rgba(0,10,0,0.9); 
-        padding:15px 30px; margin-bottom:20px; box-shadow:0 0 20px rgba(0,255,65,0.1);
-    }
-    .hud h1 { margin:0; font-size:3rem; letter-spacing:4px; text-shadow:0 0 10px var(--matrix); line-height:1; }
-    .hud small { color:var(--dim); font-size:1.2rem; letter-spacing:2px; }
+        /* Form Elements */
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; color: var(--text-sec); font-size: 0.85rem; margin-bottom: 8px; font-weight: 500; }
+        
+        select, input[type="date"] {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: white;
+            padding: 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        select:hover, input[type="date"]:hover { border-color: var(--primary); }
+        option { background: var(--bg-deep); }
 
-    .threat-meter { text-align:right; width:400px; }
-    .threat-track { height:15px; background:#000; border:1px solid var(--dim); position:relative; overflow:hidden; margin-top:5px;}
-    .bar-smith { position:absolute; top:0; left:0; height:100%; background:var(--alert); opacity:0.6; width:0%; transition:1s; }
-    .bar-neo { position:absolute; top:0; left:0; height:100%; background:var(--matrix); width:0%; transition:1s; box-shadow:0 0 10px var(--matrix); z-index:2; mix-blend-mode: screen; }
+        /* Result Display */
+        .result-box {
+            margin-top: 30px;
+            background: rgba(0, 242, 255, 0.05);
+            border-radius: 12px;
+            padding: 20px;
+            border-left: 4px solid var(--accent);
+            opacity: 0; transform: translateY(10px);
+            transition: 0.5s all;
+        }
+        .result-box.active { opacity: 1; transform: translateY(0); }
+        .result-date { font-size: 2rem; font-weight: 700; color: white; display: block; margin: 5px 0; }
+        .result-label { font-size: 0.75rem; text-transform: uppercase; color: var(--text-sec); letter-spacing: 1px; }
 
-    /* --- VIEWPORT --- */
-    .viewport { flex:1; position:relative; overflow:hidden; }
-    .view { position:absolute; top:0; left:0; width:100%; height:100%; transition:0.4s ease-in-out; overflow-y:auto; padding-right:10px; opacity:1; transform:scale(1); }
-    .view.hidden { opacity:0; pointer-events:none; transform:scale(1.1); filter:blur(10px); }
-    
-    ::-webkit-scrollbar { width:10px; } 
-    ::-webkit-scrollbar-track { background:#000; border-left:1px solid var(--dim); }
-    ::-webkit-scrollbar-thumb { background:var(--dim); border:1px solid #000; }
-    ::-webkit-scrollbar-thumb:hover { background:var(--matrix); }
+        /* =========================================
+           5. PROCESS VISUALIZER (Right Side)
+           ========================================= */
+        .process-track {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            position: relative;
+            margin-top: 40px;
+        }
+        /* Connection Line */
+        .process-track::after {
+            content: ''; position: absolute; top: 25px; left: 40px; right: 40px;
+            height: 3px; background: rgba(255,255,255,0.1); z-index: 0;
+            border-radius: 2px;
+        }
 
-    /* --- GRID --- */
-    .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(350px, 1fr)); gap:20px; padding-bottom:50px; }
-    .card { 
-        background:rgba(0,10,0,0.8); border:1px solid var(--dim); padding:20px; 
-        cursor:pointer; transition:0.2s; position:relative; display:flex; flex-direction:column;
-    }
-    .card:hover { border-color:var(--matrix); background:rgba(0,20,0,0.9); transform:translateY(-4px); box-shadow:0 0 20px rgba(0,255,65,0.2); }
-    
-    .c-head { display:flex; justify-content:space-between; margin-bottom:10px; font-size:2rem; }
-    .c-tit { font-size:1.5rem; font-weight:bold; color:#fff; text-transform:uppercase; letter-spacing:1px; }
-    .c-meta { display:flex; justify-content:space-between; font-size:1rem; color:var(--dim); margin-top:20px; }
-    .c-bar-box { height:6px; background:#001100; margin-top:10px; width:100%; border:1px solid var(--dim); }
-    .c-bar { height:100%; background:var(--matrix); width:0%; transition:1s; box-shadow:0 0 5px var(--matrix); }
+        .step {
+            position: relative; z-index: 2;
+            display: flex; flex-direction: column; align-items: center;
+            width: 20%;
+            transition: 0.5s;
+            opacity: 0.4;
+        }
 
-    /* --- DETAIL VIEW --- */
-    .nav { 
-        display:flex; justify-content:space-between; align-items:center; 
-        padding-bottom:15px; margin-bottom:20px; border-bottom:1px solid var(--dim); 
-        background:rgba(0,0,0,0.9); position:sticky; top:0; z-index:20; 
-    }
-    .back-btn { 
-        background:black; border:1px solid var(--matrix); color:var(--matrix); 
-        padding:10px 30px; font-family:inherit; font-size:1.2rem; font-weight:bold; 
-        cursor:pointer; transition:0.2s; 
-    }
-    .back-btn:hover { background:var(--matrix); color:black; box-shadow:0 0 15px var(--matrix); }
-    
-    .search { 
-        background:#001100; border:1px solid var(--dim); color:var(--matrix); 
-        padding:10px 15px; font-family:inherit; font-size:1.2rem; width:350px; outline:none; 
-    }
-    .search:focus { border-color:var(--matrix); box-shadow:0 0 10px var(--dim); }
+        .step-icon-box {
+            width: 50px; height: 50px;
+            background: var(--bg-deep);
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem; color: var(--text-sec);
+            margin-bottom: 15px;
+            transition: 0.5s;
+        }
 
-    /* --- MISSION LIST --- */
-    .task-list { display:flex; flex-direction:column; gap:10px; padding-bottom:100px; }
-    .task { 
-        background:rgba(0,15,0,0.5); border:1px solid var(--dim); 
-        transition:0.2s; position:relative; overflow:hidden;
-    }
-    .task:hover { border-color:var(--matrix); background:rgba(0,20,0,0.7); }
-    
-    .t-head { 
-        padding:15px 20px; cursor:pointer; display:grid; 
-        grid-template-columns: 50px 1fr 180px; align-items:center; gap:15px;
-    }
-    .t-idx { color:var(--dim); font-size:1.1rem; }
-    .t-tit { font-size:1.2rem; font-weight:bold; color:#fff; transition:0.2s; text-transform:uppercase; }
-    
-    /* PROFICIENCY BUTTONS */
-    .prof-wrap { display:flex; gap:4px; background:#000; padding:3px; border:1px solid var(--dim); }
-    .p-btn { 
-        width:40px; height:25px; border:none; background:transparent; color:#444; 
-        font-family:inherit; font-weight:bold; font-size:1rem; cursor:pointer; 
-        transition:0.2s; display:grid; place-items:center;
-    }
-    .p-btn:hover { color:#fff; }
-    .p-btn.active.low { background:var(--p-low); color:#000; box-shadow:0 0 10px var(--p-low); }
-    .p-btn.active.med { background:var(--p-med); color:#000; box-shadow:0 0 10px var(--p-med); }
-    .p-btn.active.high { background:var(--p-high); color:#000; box-shadow:0 0 10px var(--p-high); }
+        .step-text h5 { font-size: 0.9rem; margin-bottom: 4px; }
+        .step-text span { font-size: 0.75rem; color: var(--text-sec); }
 
-    /* EXPANDED BODY */
-    .t-body { 
-        max-height:0; overflow:hidden; transition:0.4s ease; 
-        background:rgba(0,5,0,0.8); border-top:1px solid transparent; 
-    }
-    .task.open .t-body { max-height:500px; border-top-color:var(--dim); }
-    .t-content { padding:20px; display:grid; grid-template-columns: 1fr 1fr; gap:20px; }
-    
-    .label { color:var(--dim); font-size:1rem; font-weight:bold; letter-spacing:1px; margin-bottom:5px; display:block; }
-    .desc { color:#ccc; font-size:1.1rem; line-height:1.4; margin-bottom:15px; min-height:40px; }
-    .cmd-box { 
-        background:#050505; border-left:4px solid var(--matrix); padding:15px; 
-        font-family:monospace; color:var(--matrix); font-size:1rem; 
-        margin-bottom:15px; white-space:pre-wrap; word-break:break-all;
-    }
-    
-    .memo { 
-        width:100%; background:#080808; border:1px solid var(--dim); color:#fff; padding:10px; 
-        font-family:inherit; min-height:60px; resize:vertical; font-size:1rem; margin-bottom:10px;
-    }
-    .memo:focus { border-color:var(--matrix); outline:none; }
+        /* Active State */
+        .step.active { opacity: 1; }
+        .step.active .step-icon-box {
+            border-color: var(--accent);
+            color: var(--accent);
+            box-shadow: 0 0 25px rgba(0, 242, 255, 0.2);
+            transform: scale(1.1);
+        }
 
-    .done-btn { 
-        width:100%; padding:15px; background:#001100; border:1px solid var(--dim); 
-        color:var(--dim); font-weight:bold; cursor:pointer; text-transform:uppercase; letter-spacing:2px;
-        transition:0.2s; grid-column:span 2; font-size:1.2rem;
-    }
-    .done-btn:hover { background:var(--matrix); color:#000; box-shadow:0 0 20px var(--matrix); }
+        /* Skipped State */
+        .step.skipped .step-icon-box { border-color: #333; color: #444; background: #000; }
+        .step.skipped h5 { text-decoration: line-through; color: #555; }
 
-    /* MASTERED */
-    .task.mastered { border-color:var(--matrix); box-shadow:inset 0 0 10px rgba(0,255,65,0.1); }
-    .task.mastered .t-head { background:rgba(0, 50, 0, 0.4); }
-    .task.mastered .t-tit { text-decoration:line-through; color:var(--dim); }
-    .task.mastered .done-btn { background:var(--matrix); color:#000; pointer-events:none; content:'MISSION COMPLETE'; }
+        /* =========================================
+           6. COUNTRY GRID SYSTEM
+           ========================================= */
+        .grid-section-title {
+            margin-bottom: 30px;
+            display: flex; justify-content: space-between; align-items: flex-end;
+            border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;
+        }
+        
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 25px;
+            padding-bottom: 100px;
+        }
 
-    .reset { position:fixed; bottom:10px; right:10px; color:#333; font-size:0.7rem; cursor:pointer; z-index:9999; }
-    .reset:hover { color:red; }
+        .country-card {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 25px;
+            position: relative;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            opacity: 0; transform: translateY(20px); /* Initial state for animation */
+        }
 
-</style>
+        /* Card Hover Effect */
+        .country-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            background: rgba(255,255,255,0.06);
+            border-color: var(--primary);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        .card-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 20px;
+        }
+        .flag-box { font-size: 2rem; }
+        
+        .status-pill {
+            font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+            padding: 5px 12px; border-radius: 50px;
+        }
+        .pill-blue { background: rgba(41, 121, 255, 0.2); color: var(--st-info); border: 1px solid rgba(41, 121, 255, 0.4); }
+        .pill-purple { background: rgba(156, 39, 176, 0.2); color: #e040fb; border: 1px solid rgba(156, 39, 176, 0.4); }
+        .pill-red { background: rgba(255, 51, 102, 0.2); color: var(--st-danger); border: 1px solid rgba(255, 51, 102, 0.4); }
+
+        .info-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .info-row:last-child { border: none; }
+        
+        .lbl { font-size: 0.85rem; color: var(--text-sec); }
+        .val { font-size: 0.9rem; font-weight: 600; }
+
+        .text-warn { color: var(--st-warning); }
+        .text-good { color: var(--st-success); }
+
+        /* Animation Keyframes */
+        @keyframes slideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeCard { to { opacity: 1; transform: translateY(0); } }
+
+        /* =========================================
+           7. MEDIA QUERIES
+           ========================================= */
+        @media (max-width: 1000px) {
+            .dashboard-grid { grid-template-columns: 1fr; }
+            .process-track { overflow-x: auto; padding-bottom: 20px; }
+            .process-track::after { width: 100%; min-width: 600px; }
+            .step { min-width: 100px; }
+        }
+    </style>
 </head>
 <body>
-
-<div id="boot-screen" onclick="skipBoot()">
-    <div class="type-text" id="boot-text"></div>
-    <div class="skip-hint">[ CLICK TO BYPASS SECURITY ]</div>
-</div>
-
-<canvas id="matrix-canvas"></canvas>
-<div class="scanlines"></div>
-
-<div class="app" id="main-app">
-    <div class="hud">
-        <div class="hud-title">
-            <small>THE ARCHITECT // v29</small>
-            <h1>TITAN SOURCE</h1>
-        </div>
-        <div class="threat-meter">
-            <div style="display:flex; justify-content:space-between; font-size:1rem; margin-bottom:5px; color:var(--matrix);">
-                <span>NEO (PROGRESS)</span>
-                <span id="days-left" style="color:var(--alert)">SMITH (TIME)</span>
-            </div>
-            <div class="threat-track">
-                <div class="bar-smith" id="bar-smith"></div>
-                <div class="bar-neo" id="bar-neo"></div>
-            </div>
-        </div>
-    </div>
-
-    <div class="viewport">
-        <div id="v-map" class="view">
-            <div class="grid" id="grid"></div>
-        </div>
-
-        <div id="v-det" class="view hidden">
-            <div class="nav">
-                <button class="back-btn" onclick="showMap()">❮ RETURN</button>
-                <div style="font-size:1.5rem; font-weight:bold; color:var(--matrix);" id="ph-title">PHASE</div>
-                <input type="text" class="search" placeholder="grep database..." onkeyup="renderTasks(currentPhase, this.value)">
-            </div>
-            <div id="task-list" class="task-list"></div>
-        </div>
-    </div>
-</div>
-
-<div class="reset" onclick="hardReset()">Factory Reset</div>
-
-<script>
-// --- 1. BOOT SEQUENCE ---
-const bootText = document.getElementById('boot-text');
-const app = document.getElementById('main-app');
-const bootScreen = document.getElementById('boot-screen');
-
-async function typeWriter(text, speed = 100) {
-    bootText.innerHTML = "";
-    for (let i = 0; i < text.length; i++) {
-        bootText.innerHTML += text.charAt(i);
-        await new Promise(r => setTimeout(r, speed));
-    }
-    bootText.innerHTML += '<span class="cursor">_</span>';
-}
-
-async function runBoot() {
-    await typeWriter("Wake up, Neo...", 100);
-    await new Promise(r => setTimeout(r, 1500));
-    await typeWriter("The Matrix has you...", 100);
-    await new Promise(r => setTimeout(r, 1500));
-    await typeWriter("Follow the white rabbit.", 100);
-    await new Promise(r => setTimeout(r, 1500));
-    await typeWriter("Knock, knock, Neo.", 150);
-    await new Promise(r => setTimeout(r, 1000));
-    skipBoot();
-}
-
-function skipBoot() {
-    bootScreen.style.display = 'none';
-    app.style.display = 'flex';
-    initApp();
-}
-
-// Start Boot
-runBoot();
-
-// --- 2. MATRIX RAIN ---
-const canvas = document.getElementById('matrix-canvas');
-const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-const chars = '01XY'; const fontSize = 16; const columns = canvas.width/fontSize;
-const drops = Array(Math.floor(columns)).fill(1);
-function draw() {
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.05)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = '#0F0'; ctx.font = fontSize + 'px monospace';
-    for(let i=0; i<drops.length; i++) {
-        const text = chars.charAt(Math.floor(Math.random() * chars.length));
-        ctx.fillText(text, i*fontSize, drops[i]*fontSize);
-        if(drops[i]*fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
-        drops[i]++;
-    }
-}
-setInterval(draw, 40);
-
-// --- 3. THE DATA (FULL 50 ITEMS PER PHASE) ---
-const PHASES = [
-    { t:"INFRASTRUCTURE", i:"🏗️", d:"Dec 31, 2025" },
-    { t:"ARCANE THEORY", i:"🧠", d:"Jan 31, 2026" },
-    { t:"WEAPONIZATION", i:"⚔️", d:"Feb 28, 2026" },
-    { t:"RECONNAISSANCE", i:"🔍", d:"Mar 15, 2026" },
-    { t:"RED TEAM OPS", i:"🚩", d:"Apr 15, 2026" },
-    { t:"BLUE TEAM OPS", i:"🛡️", d:"May 01, 2026" },
-    { t:"LABS: TRYHACKME", i:"🟥", d:"May 20, 2026" },
-    { t:"LABS: HACKTHEBOX", i:"🟩", d:"June 05, 2026" }
-];
-
-const DB = PHASES.map((p, idx) => {
-    const tasks = [];
     
-    // --- REAL DATA FOR PHASE 0 (INFRA) ---
-    if(idx === 0) {
-        const items = [
-            ["Hypervisor", "Install VMware Workstation Pro. Enable Nested Virtualization.", "BIOS > Security > VT-x"], 
-            ["Network NAT", "Config 10.0.0.0/24. Isolate from home WiFi.", "VMnet8"], 
-            ["Install DC01", "WinSvr 2019 Core. Static IP 10.0.0.10.", "ISO Boot"], 
-            ["Promote DC", "Install ADDS. Forest: corp.matrix.", "Install-ADDSForest"], 
-            ["Install Kali", "Attacker VM. Update repos.", "apt update"], 
-            ["Hosts File", "DNS Mapping for DC.", "/etc/hosts"], 
-            ["Win10 Client", "Deploy Client VM.", "ISO Boot"], 
-            ["Join Domain", "Join corp.matrix.", "Add-Computer"], 
-            ["Linux Join", "SSSD/Realm.", "realm join"], 
-            ["RSAT Tools", "Mgmt Tools.", "Add-WindowsCap"], 
-            ["Tier 0 OU", "Admins.", "New-ADOU"], 
-            ["Tier 1 OU", "Servers.", "New-ADOU"], 
-            ["Tier 2 OU", "Workstations.", "New-ADOU"], 
-            ["Svc OU", "Service Accts.", "New-ADOU"], 
-            ["Create DA", "Domain Admin.", "New-ADUser"], 
-            ["Create SQL Svc", "Kerberoast Target.", "New-ADUser"], 
-            ["Create IIS Svc", "Kerberoast Target.", "New-ADUser"], 
-            ["Set SQL SPN", "Vuln Config.", "setspn -S"], 
-            ["Set IIS SPN", "Vuln Config.", "setspn -S"], 
-            ["Disable PreAuth", "AS-REP Target.", "Set-ADAccountControl"], 
-            ["Add Local Admin", "GPO Vuln.", "Restricted Grps"], 
-            ["Create SMB Share", "File Drop.", "New-SmbShare"], 
-            ["Weak Perms", "Everyone Full.", "Grant-SmbAccess"], 
-            ["Install Splunk", "SIEM.", "dpkg -i"], 
-            ["Install Fwd", "Universal Fwd.", "msiexec"], 
-            ["Config Inputs", "Security Log.", "inputs.conf"], 
-            ["Install Sysmon", "Endpoint Log.", "sysmon -i"], 
-            ["Install ADCS", "PKI Role.", "Install-AdcsCA"], 
-            ["Config CA", "Enterprise CA.", "CertSrv"], 
-            ["Vuln Template", "ESC1.", "Dup 'WebServer'"], 
-            ["Install SQL", "DB Svr.", "Setup.exe"], 
-            ["Install IIS", "Web Svr.", "Add-Role"], 
-            ["Enable WinRM", "Remote.", "Enable-PSRemoting"], 
-            ["No Defender", "Test Mode.", "Set-MpPreference"], 
-            ["Honey User", "Trap.", "New-ADUser"], 
-            ["Canary File", "Trap.", "passwords.xlsx"], 
-            ["Rubeus Disk", "Artifact.", "Copy-Item"], 
-            ["Mimi Disk", "Artifact.", "Copy-Item"], 
-            ["Sched Task", "Persist.", "schtasks"], 
-            ["Audit Pol", "Logging.", "auditpol"], 
-            ["Enable RDP", "Access.", "RegKey"], 
-            ["Baseline Snap", "Backup.", "VMware Snap"], 
-            ["Doc IP Map", "Notes.", "Notion"], 
-            ["Create Site", "AD Site.", "New-ADSite"], 
-            ["Create Subnet", "AD Sub.", "New-ADSubnet"], 
-            ["DSRM Pass", "Recovery.", "ntdsutil"], 
-            ["Recycle Bin", "Feature.", "Enable-Feat"], 
-            ["FW Rules", "NetSec.", "New-NetFirewallRule"], 
-            ["Final Check", "Ping All.", "ping 10.0.0.10"],
-            ["Backup AD", "Export IFM.", "ntdsutil ifm"]
-        ];
-        items.forEach(t => tasks.push({t: t[0], d: t[1], c: t[2]}));
-    }
-    // --- REAL DATA FOR PHASE 1 (THEORY) ---
-    else if (idx === 1) {
-        const items = [
-            ["AS-REQ", "Auth Request.", "Msg 10"], ["AS-REP", "TGT Return.", "Msg 11"], ["TGS-REQ", "Service Req.", "Msg 12"], ["TGS-REP", "Service Tkt.", "Msg 13"], ["AP-REQ", "App Access.", "Msg 14"],
-            ["AP-REP", "Mutual Auth.", "Msg 15"], ["PAC", "Privileges.", "MS-PAC"], ["KDC Signing", "Integrity.", "KRBTGT"], ["NTLMv1", "Legacy.", "DES"], ["NTLMv2", "Standard.", "HMAC-MD5"],
-            ["Pass-the-Hash", "Logic.", "No Crack"], ["LDAP Tree", "Struct.", "DN/CN"], ["LDAP Filter", "Query.", "(&(..))"], ["Access Tokens", "Security.", "Primary"], ["Integrity Lvl", "Mandatory.", "High/Sys"],
-            ["UAC", "Control.", "Consent"], ["SDDL", "Perms.", "O:DAG"], ["DACL", "Access.", "Allow/Deny"], ["SACL", "Audit.", "Log"], ["Inheritance", "Prop.", "Flags"],
-            ["Global Cat", "Index.", "3268"], ["Schema Master", "FSMO.", "Forest"], ["Naming Master", "FSMO.", "Forest"], ["PDC Emulator", "FSMO.", "Time"], ["RID Master", "FSMO.", "Pool"],
-            ["Infra Master", "FSMO.", "Refs"], ["Replication", "Sync.", "DRS"], ["Trust: Parent", "Auto.", "Trans"], ["Trust: Ext", "Manual.", "NonTrans"], ["Trust: Forest", "Manual.", "Kerb"],
-            ["SID Filter", "Quar.", "Security"], ["SID History", "Migr.", "Attr"], ["Unconstrained", "Deleg.", "TGT LSASS"], ["Constrained", "Deleg.", "S4U"], ["RBCD", "Deleg.", "Resource"],
-            ["Group Scope", "Strat.", "G/U/DL"], ["AdminSDHolder", "Prot.", "SDProp"], ["DPAPI", "Secrets.", "MasterKey"], ["LSASS", "Mem.", "ProcDump"], ["SAM", "Local.", "Hive"],
-            ["LSA Secrets", "Svc.", "Reg"], ["NTDS.dit", "DB.", "ESE"], ["DNS SRV", "Loc.", "_ldap"], ["LLMNR", "Legacy.", "Bcast"], ["ADCS CA", "PKI.", "Root"],
-            ["ADCS OID", "Temp.", "ObjID"], ["Azure PHS", "Sync.", "Hash"], ["Golden SAML", "Cloud.", "SignKey"], ["PRT", "Cloud.", "Refresh"], ["RPC", "Proto.", "135"]
-        ];
-        items.forEach(t => tasks.push({t: t[0], d: t[1], c: t[2]}));
-    }
-    // --- REAL DATA FOR PHASE 4 (ATTACK) ---
-    else if (idx === 4) {
-        const items = [
-            ["AS-REP Roast", "Pre-Auth.", "Rubeus"], ["Kerberoast", "TGS.", "Rubeus"], ["Crack AS", "Hash.", "18200"], ["Crack TGS", "Hash.", "13100"], ["LLMNR Pois", "MITM.", "Responder"],
-            ["Relay SMB", "Net.", "ntlmrelayx"], ["Relay LDAP", "Net.", "ntlmrelayx"], ["Relay ADCS", "Net.", "ntlmrelayx"], ["IPv6 MITM", "DNS.", "mitm6"], ["PtH", "Auth.", "sekurlsa"],
-            ["PtK", "AES.", "sekurlsa"], ["Over-PtH", "TGT.", "Rubeus"], ["PtT", "Tkt.", "Rubeus"], ["DCSync", "Rep.", "lsadump"], ["Dump Mimi", "Mem.", "logonpass"],
-            ["Dump Proc", "Mem.", "procdump"], ["Dump Com", "Mem.", "comsvcs"], ["Dump Reg", "SAM.", "reg save"], ["Dump NTDS", "DB.", "ntdsutil"], ["Impersonate", "Tok.", "incognito"],
-            ["Make Tok", "Net.", "runas"], ["Golden Tkt", "TGT.", "mimikatz"], ["Silver Tkt", "ST.", "mimikatz"], ["Diamond Tkt", "Tkt.", "Rubeus"], ["Sapphire Tkt", "Tkt.", "Rubeus"],
-            ["Unconst Abuse", "Deleg.", "Rubeus mon"], ["Const Abuse", "Deleg.", "Rubeus s4u"], ["RBCD Abuse", "Deleg.", "Rubeus hash"], ["Shadow Cred", "Hello.", "Whisker"], ["ESC1", "Cert.", "Certify"],
-            ["ESC4", "ACL.", "Certify"], ["ESC8", "Relay.", "Http"], ["PetitPotam", "Coerce.", "Trigger"], ["PrinterBug", "Coerce.", "Spool"], ["DFSCoerce", "Coerce.", "Trigger"],
-            ["ShadowCo", "Coerce.", "Trigger"], ["GPO Task", "Abuse.", "SharpGPO"], ["GPO User", "Abuse.", "AddAdmin"], ["ACL Owner", "Abuse.", "SetOwner"], ["ACL DACL", "Abuse.", "AddAcl"],
-            ["ACL Pass", "Abuse.", "SetPass"], ["Skeleton", "Persist.", "skeleton"], ["DSRM", "Persist.", "SetPass"], ["AdminSD", "Persist.", "AddACL"], ["SID Hist", "Persist.", "Inject"],
-            ["Zerologon", "Exp.", "CVE"], ["NoPac", "Exp.", "CVE"], ["PrintNight", "Exp.", "CVE"], ["SQL Link", "Piv.", "xp_cmd"], ["Gold SAML", "Cloud.", "Forge"]
-        ];
-        items.forEach(t => tasks.push({t: t[0], d: t[1], c: t[2]}));
-    }
-    // --- REAL DATA FOR PHASE 7 (HTB) ---
-    else if (idx === 7) {
-        const boxes = ["Forest", "Active", "Sauna", "Blackfield", "Intelligence", "Resolute", "Cascade", "Monteverde", "Sizzle", "Scrambled", "Reel", "Mantico", "Search", "Support", "Control", "Object", "Escape", "Return", "Timelapse", "Authority", "Vintage", "Grandpa", "Granny", "Blue", "Devel", "Optimum", "Bastard", "Arctic", "Jerry", "Nibbles", "Beep", "Shocker", "Bashed", "Lame", "Legacy", "Netmon", "Buff", "Butler", "Jeeves", "Silo", "Bounty", "SecNotes", "Chatter", "Access", "Conceal", "Sniper", "Bank", "Cronos", "Nineveh", "Sense"];
-        boxes.forEach((t, i) => tasks.push({ t: `Box: ${t}`, d: "Enumerate, Foothold, Root.", c: "submit_root_flag.py" }));
-    }
-    // --- FILLER FOR OTHERS (To ensure 50 items exist) ---
-    else {
-        for(let i=1; i<=50; i++) {
-            tasks.push({
-                t: `${p.t} - Protocol ${i}`,
-                d: `Detailed execution plan for ${p.t} step ${i}. Verify operational security before execution.`,
-                c: `run_module.exe --target ${i} --silent`
-            });
-        }
-    }
-    return { ...p, tasks };
-});
+    <canvas id="particles"></canvas>
 
-// --- STATE MANAGEMENT ---
-let progress = JSON.parse(localStorage.getItem('titan_v29')) || {};
-let currentPhase = 0;
-
-function initApp() {
-    renderMap();
-    updateGlobal();
-    setInterval(timer, 1000);
-}
-
-// 1. RENDER MAP
-function renderMap() {
-    const grid = document.getElementById('grid');
-    grid.innerHTML = '';
-    
-    DB.forEach((p, idx) => {
-        const pData = progress[idx] || {};
-        let done = 0;
-        p.tasks.forEach((_, tIdx) => { if(pData[tIdx]?.done) done++; });
-        let pct = Math.round((done / p.tasks.length) * 100);
-        
-        let h = '';
-        for(let j=0; j<10; j++) h += `<div class="c-bar" style="background:${pct >= (j+1)*10 ? 'var(--matrix)' : '#002200'}; flex:1; height:100%; box-shadow:${pct >= (j+1)*10 ? '0 0 5px var(--matrix)' : 'none'};"></div>`;
-
-        grid.innerHTML += `
-            <div class="card" onclick="openPhase(${idx})">
-                <div class="c-head">
-                    <span>${p.i}</span>
-                    <span style="font-size:0.8rem; color:var(--dim)">${pct}%</span>
+    <header>
+        <div class="container nav-wrap">
+            <div class="brand">
+                <div class="brand-icon"><i class="fas fa-cubes"></i></div>
+                <div class="brand-text">
+                    <h2>AUTOCOM</h2>
+                    <span>EAST AFRICA</span>
                 </div>
-                <div class="c-tit">${p.t}</div>
-                <div class="c-sub">
-                    <span>${done} / 50 SECURED</span>
-                    <span>${p.d}</span>
-                </div>
-                <div style="display:flex; gap:3px; height:6px; margin-top:15px;">${h}</div>
             </div>
-        `;
-    });
-}
+            <div class="search-container">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="searchInput" placeholder="Search country..." onkeyup="filterGrid()">
+            </div>
+        </div>
+    </header>
 
-// 2. NAVIGATION
-function openPhase(id) {
-    currentPhase = id;
-    document.getElementById('ph-title').innerText = DB[id].t;
-    document.getElementById('v-map').classList.add('hidden');
-    document.getElementById('v-det').classList.remove('hidden');
-    renderTasks(id);
-}
-
-function showMap() {
-    document.getElementById('v-det').classList.add('hidden');
-    document.getElementById('v-map').classList.remove('hidden');
-    renderMap();
-}
-
-// 3. RENDER TASKS
-function renderTasks(id, filter='') {
-    const list = document.getElementById('task-list');
-    list.innerHTML = '';
-    const pData = progress[id] || {};
-
-    DB[id].tasks.forEach((t, x) => {
-        if(filter && !t.t.toLowerCase().includes(filter.toLowerCase())) return;
+    <div class="container">
         
-        const saved = pData[x] || { prof: 0, done: false, memo: '' };
-        const num = (x+1).toString().padStart(2,'0');
-        
-        // Active Button Classes
-        const l = saved.prof === 1 ? 'active' : '';
-        const m = saved.prof === 2 ? 'active' : '';
-        const h = saved.prof === 3 ? 'active' : '';
-        
-        const btnTxt = saved.done ? 'SYSTEM SECURED (UNDO)' : 'EXECUTE // MARK COMPLETE';
+        <div class="dashboard-grid">
+            
+            <div class="glass-panel">
+                <div class="panel-title">
+                    <i class="fas fa-calculator"></i>
+                    <h4>Smart Schedule</h4>
+                </div>
 
-        list.innerHTML += `
-            <div class="task ${saved.done ? 'mastered' : ''}">
-                <div class="t-head" onclick="toggleTask(this, '${t.d}')">
-                    <span class="t-idx">#${num}</span>
-                    <span class="t-tit">${t.t}</span>
-                    
-                    <div class="prof-wrap" onclick="event.stopPropagation()">
-                        <button class="p-btn low ${l}" onclick="setProf(${id}, ${x}, 1)">L</button>
-                        <button class="p-btn med ${m}" onclick="setProf(${id}, ${x}, 2)">M</button>
-                        <button class="p-btn high ${h}" onclick="setProf(${id}, ${x}, 3)">H</button>
-                    </div>
+                <div class="input-group">
+                    <label>DESTINATION MARKET</label>
+                    <select id="countrySelect" onchange="calculateLogic()">
+                        <option value="ke">Kenya (Mombasa)</option>
+                        <option value="tz">Tanzania (Dar es Salaam)</option>
+                        <option value="ug">Uganda (via Mombasa)</option>
+                        <option value="zm">Zambia (via Dar)</option>
+                        <option value="zw">Zimbabwe (via Dar)</option>
+                        <option value="drc">DR Congo (via Dar)</option>
+                        <option value="bdi">Burundi (via Dar)</option>
+                        <option value="mz">Mozambique (Maputo)</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>TARGET ARRIVAL MONTH</label>
+                    <input type="date" id="arrivalDate" onchange="calculateLogic()">
+                </div>
+
+                <div class="result-box" id="resultBox">
+                    <span class="result-label">Purchase Deadline</span>
+                    <span class="result-date" id="outputDate">--</span>
+                    <p style="font-size:0.85rem; color: #fff; opacity:0.8; margin-top:5px;" id="outputNote">
+                        Calculating...
+                    </p>
+                </div>
+            </div>
+
+            <div class="glass-panel">
+                <div class="panel-title">
+                    <i class="fas fa-project-diagram"></i>
+                    <h4 id="vizTitle">Process Visualization</h4>
                 </div>
                 
-                <div class="t-body">
-                    <div class="t-content">
-                        <div>
-                            <span class="label">STRATEGIC INTEL</span>
-                            <div class="desc">${t.d}</div>
-                            <span class="label">EXECUTION VECTOR</span>
-                            <div class="cmd-box">${t.c}</div>
-                        </div>
-                        <div>
-                            <span class="label">FIELD MEMOS</span>
-                            <textarea class="memo" oninput="saveMemo(${id}, ${x}, this.value)">${saved.memo}</textarea>
-                            <button class="done-btn" onclick="toggleDone(${id}, ${x})">${btnTxt}</button>
-                        </div>
+                <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                    <p style="font-size: 0.9rem; color: var(--text-sec);">
+                        <i class="fas fa-info-circle" style="color: var(--primary);"></i> 
+                        The timeline below adapts automatically based on Country regulations (Inspection) and Geography (Inland Transit).
+                    </p>
+                </div>
+
+                <div class="process-track">
+                    <div class="step active">
+                        <div class="step-icon-box"><i class="fas fa-gavel"></i></div>
+                        <div class="step-text"><h5>Buy</h5><span>Day 1</span></div>
+                    </div>
+                    <div class="step active" id="stepInspect">
+                        <div class="step-icon-box"><i class="fas fa-microscope"></i></div>
+                        <div class="step-text"><h5 id="lblInspect">Insp.</h5><span>Processing</span></div>
+                    </div>
+                    <div class="step active">
+                        <div class="step-icon-box"><i class="fas fa-ship"></i></div>
+                        <div class="step-text"><h5>Ocean</h5><span>Transit</span></div>
+                    </div>
+                    <div class="step active">
+                        <div class="step-icon-box"><i class="fas fa-anchor"></i></div>
+                        <div class="step-text"><h5>Port</h5><span>Clearance</span></div>
+                    </div>
+                    <div class="step" id="stepInland">
+                        <div class="step-icon-box"><i class="fas fa-truck-fast"></i></div>
+                        <div class="step-text"><h5>Inland</h5><span>Trucking</span></div>
                     </div>
                 </div>
             </div>
-        `;
-    });
-}
+        </div>
 
-function toggleTask(el) {
-    el.parentElement.classList.toggle('open');
-}
+        <div class="grid-section-title">
+            <h3>Active Regulations Database</h3>
+            <span style="font-size: 0.8rem; color: var(--text-sec);">LIVE DATA // V.2025.1</span>
+        </div>
 
-// 4. HANDLERS
-function setProf(pid, tid, val) {
-    if(!progress[pid]) progress[pid] = {};
-    if(!progress[pid][tid]) progress[pid][tid] = { done: false, memo: '' };
-    
-    // Toggle check
-    if(progress[pid][tid].prof === val) progress[pid][tid].prof = 0;
-    else progress[pid][tid].prof = val;
-    
-    save();
-    renderTasks(pid, document.querySelector('.search').value);
-}
+        <div class="grid-container" id="gridContainer">
+            </div>
 
-function toggleDone(pid, tid) {
-    if(!progress[pid]) progress[pid] = {};
-    if(!progress[pid][tid]) progress[pid][tid] = { prof: 0, memo: '' };
-    
-    progress[pid][tid].done = !progress[pid][tid].done;
-    if(progress[pid][tid].done) progress[pid][tid].prof = 3;
-    
-    save();
-    renderTasks(pid, document.querySelector('.search').value);
-}
+    </div>
 
-function saveMemo(pid, tid, val) {
-    if(!progress[pid]) progress[pid] = {};
-    if(!progress[pid][tid]) progress[pid][tid] = { prof: 0, done: false };
-    progress[pid][tid].memo = val;
-    localStorage.setItem('titan_v29', JSON.stringify(progress));
-}
+    <script>
+        // ============================================
+        // 1. DATA CONFIGURATION
+        // ============================================
+        const db = [
+            { id: 'ke', name: 'Kenya', flag: '🇰🇪', port: 'Mombasa', type: 'Coastal', inspect: 'QISJ (Strict)', age: 'Max 8 Years', time: 55 },
+            { id: 'tz', name: 'Tanzania', flag: '🇹🇿', port: 'Dar es Salaam', type: 'Coastal', inspect: 'EAA Only', age: 'No Limit', time: 55 },
+            { id: 'ug', name: 'Uganda', flag: '🇺🇬', port: 'Mombasa', type: 'Landlocked', inspect: 'EAA Only', age: 'Max 15 Years', time: 70 },
+            { id: 'zm', name: 'Zambia', flag: '🇿🇲', port: 'Dar es Salaam', type: 'Landlocked', inspect: 'Optional', age: 'No Limit', time: 75 },
+            { id: 'zw', name: 'Zimbabwe', flag: '🇿🇼', port: 'Dar/Durban', type: 'Landlocked', inspect: 'Optional', age: 'No Limit', time: 75 },
+            { id: 'drc', name: 'DR Congo', flag: '🇨🇩', port: 'Dar es Salaam', type: 'Landlocked', inspect: 'None', age: 'No Limit', time: 80 },
+            { id: 'bdi', name: 'Burundi', flag: '🇧🇮', port: 'Dar es Salaam', type: 'Landlocked', inspect: 'None', age: 'Max 10 Years', time: 75 },
+            { id: 'mz', name: 'Mozambique', flag: '🇲🇿', port: 'Maputo', type: 'Special', inspect: 'None', age: 'No Limit', time: 90 }
+        ];
 
-function save() {
-    localStorage.setItem('titan_v29', JSON.stringify(progress));
-    updateGlobal();
-}
+        // ============================================
+        // 2. GRID RENDERER (Clean, No Notes)
+        // ============================================
+        const gridEl = document.getElementById('gridContainer');
 
-function updateGlobal() {
-    let total = 0, done = 0;
-    DB.forEach((p, idx) => {
-        total += p.tasks.length;
-        const pData = progress[idx] || {};
-        Object.values(pData).forEach(v => { if(v.done) done++; });
-    });
-    
-    const pct = Math.round((done/total)*100) || 0;
-    document.getElementById('bar-neo').style.width = pct + '%';
-    
-    // Critical Mode Check
-    const timePct = parseFloat(document.getElementById('bar-smith').style.width);
-    if(timePct > pct) document.body.classList.add('critical');
-    else document.body.classList.remove('critical');
-}
+        function renderGrid(data) {
+            gridEl.innerHTML = '';
+            data.forEach((item, index) => {
+                // Determine styling based on type
+                let pillClass = 'pill-blue';
+                if(item.type === 'Landlocked') pillClass = 'pill-purple';
+                if(item.type === 'Special') pillClass = 'pill-red'; // For Mozambique
 
-function timer() {
-    const start = new Date("2024-01-01").getTime();
-    const end = new Date("2026-06-01").getTime();
-    const now = new Date().getTime();
-    const days = Math.floor((end - now) / (1000*60*60*24));
-    
-    document.getElementById('days-left').innerText = days + " DAYS REMAINING";
-    
-    const tPct = Math.min(Math.max((now - start) / (end - start) * 100, 0), 100);
-    document.getElementById('bar-smith').style.width = tPct + '%';
-    
-    updateGlobal(); 
-}
+                // Special Text Coloring for Inspection
+                let inspectColor = 'val';
+                if(item.inspect === 'None') inspectColor = 'val text-sec';
+                if(item.inspect.includes('Strict')) inspectColor = 'val text-warn';
 
-function hardReset() {
-    if(confirm("INITIATE FACTORY RESET?")) { localStorage.clear(); location.reload(); }
-}
-</script>
+                const card = document.createElement('div');
+                card.className = 'country-card';
+                card.style.animation = `fadeCard 0.5s ease-out forwards ${index * 0.1}s`; // Staggered delay
+
+                card.innerHTML = `
+                    <div class="card-header">
+                        <div class="flag-box">${item.flag}</div>
+                        <span class="status-pill ${pillClass}">${item.type}</span>
+                    </div>
+                    <h3 style="margin-bottom: 15px;">${item.name}</h3>
+                    
+                    <div class="info-row">
+                        <span class="lbl">Inspection</span>
+                        <span class="${inspectColor}">${item.inspect}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="lbl">Age Limit</span>
+                        <span class="val">${item.age}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="lbl">Est. Time</span>
+                        <span class="val">${item.time} Days</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="lbl">Port</span>
+                        <span class="val" style="color:var(--primary-glow)">${item.port}</span>
+                    </div>
+                `;
+                gridEl.appendChild(card);
+            });
+        }
+
+        renderGrid(db);
+
+        // Filter Logic
+        function filterGrid() {
+            const term = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = db.filter(i => i.name.toLowerCase().includes(term));
+            renderGrid(filtered);
+        }
+
+        // ============================================
+        // 3. CALCULATOR & VISUALIZER LOGIC
+        // ============================================
+        function calculateLogic() {
+            const code = document.getElementById('countrySelect').value;
+            const dateVal = document.getElementById('arrivalDate').value;
+            const resultBox = document.getElementById('resultBox');
+            
+            // UI Elements for Visualizer
+            const stepInspect = document.getElementById('stepInspect');
+            const lblInspect = document.getElementById('lblInspect');
+            const stepInland = document.getElementById('stepInland');
+
+            // Find country data
+            const country = db.find(c => c.id === code);
+            
+            // Logic Flags
+            let totalDays = country.time;
+            let needsInspect = true;
+            let needsInland = (country.type === 'Landlocked');
+
+            // 1. Handle Inspection Visuals
+            if(country.inspect === 'None') {
+                needsInspect = false;
+                stepInspect.className = 'step skipped';
+                lblInspect.innerText = "None";
+            } else if (country.inspect === 'Optional') {
+                stepInspect.className = 'step active';
+                lblInspect.innerText = "Optional";
+            } else {
+                stepInspect.className = 'step active';
+                lblInspect.innerText = country.inspect.split(' ')[0]; // Grab first word (QISJ/EAA)
+            }
+
+            // 2. Handle Inland Visuals
+            if(needsInland) {
+                stepInland.className = 'step active';
+            } else {
+                stepInland.className = 'step'; // dimmed
+            }
+
+            // 3. Calculate Date
+            if(dateVal) {
+                const arrival = new Date(dateVal);
+                const deadline = new Date(arrival);
+                deadline.setDate(arrival.getDate() - totalDays);
+
+                resultBox.classList.add('active');
+                document.getElementById('outputDate').innerText = deadline.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+                
+                let note = `Standard ${totalDays}-day timeline.`;
+                if(code === 'mz') note = "⚠ Warning: Uses monthly sailing schedule.";
+                
+                document.getElementById('outputNote').innerText = note;
+            }
+        }
+
+        // ============================================
+        // 4. BACKGROUND PARTICLE SYSTEM
+        // ============================================
+        const canvas = document.getElementById('particles');
+        const ctx = canvas.getContext('2d');
+        let width, height;
+        let particles = [];
+
+        function resize() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.vx = (Math.random() - 0.5) * 0.5;
+                this.vy = (Math.random() - 0.5) * 0.5;
+                this.size = Math.random() * 2;
+                this.alpha = Math.random() * 0.5;
+            }
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                if(this.x < 0) this.x = width;
+                if(this.x > width) this.x = 0;
+                if(this.y < 0) this.y = height;
+                if(this.y > height) this.y = 0;
+            }
+            draw() {
+                ctx.fillStyle = `rgba(0, 204, 255, ${this.alpha})`;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        for(let i=0; i<60; i++) particles.push(new Particle());
+
+        function animate() {
+            ctx.clearRect(0, 0, width, height);
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            // Draw connections
+            particles.forEach((p1, i) => {
+                particles.slice(i+1).forEach(p2 => {
+                    const dx = p1.x - p2.x;
+                    const dy = p1.y - p2.y;
+                    const dist = Math.sqrt(dx*dx + dy*dy);
+                    if(dist < 150) {
+                        ctx.strokeStyle = `rgba(0, 204, 255, ${0.1 * (1 - dist/150)})`;
+                        ctx.beginPath();
+                        ctx.moveTo(p1.x, p1.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.stroke();
+                    }
+                });
+            });
+            requestAnimationFrame(animate);
+        }
+        animate();
+
+    </script>
 </body>
 </html>
