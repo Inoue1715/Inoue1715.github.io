@@ -3,605 +3,589 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Autocom Logistics Hub | East Africa Division</title>
-    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+    <title>Autocom Vortex | Logistics Network</title>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
     <style>
         /* =========================================
-           1. PREMIUM THEME CONFIGURATION
+           1. VORTEX THEME CONFIG
            ========================================= */
         :root {
-            /* Brand Palette - Deep Ocean Navy */
-            --bg-deep: #050b14;
-            --bg-card: rgba(16, 33, 56, 0.6);
-            --primary: #0066cc;
-            --primary-glow: #00ccff;
-            --accent: #00f2ff;
+            /* Backgrounds */
+            --bg-void: #020408;
+            --bg-panel: #0a111c;
+            --bg-panel-glass: rgba(10, 17, 28, 0.7);
             
-            /* Status Colors */
-            --st-success: #00e676;
-            --st-warning: #ffb300;
-            --st-danger: #ff3366;
-            --st-info: #2979ff;
+            /* Accents */
+            --neon-cyan: #00f2ea;
+            --neon-blue: #0075ff;
+            --neon-amber: #ffae00;
+            --neon-red: #ff0055;
+            --neon-green: #00ff9d;
             
             /* Text */
-            --text-main: #ffffff;
-            --text-sec: #94a3b8;
+            --text-main: #e1e6eb;
+            --text-dim: #5c677d;
             
-            /* Effects */
-            --glass-border: 1px solid rgba(255, 255, 255, 0.08);
-            --glass-blur: blur(16px);
-            --shadow-card: 0 15px 35px rgba(0, 0, 0, 0.4);
-            --anim-speed: 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+            /* Borders & Effects */
+            --border-tech: 1px solid rgba(0, 242, 234, 0.15);
+            --glow: 0 0 20px rgba(0, 242, 234, 0.15);
+            --backdrop: blur(10px);
         }
 
-        /* =========================================
-           2. GLOBAL RESET & BASE
-           ========================================= */
-        * { margin: 0; padding: 0; box-sizing: border-box; outline: none; }
+        /* Base Reset */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-void); }
+        ::-webkit-scrollbar-thumb { background: var(--neon-blue); border-radius: 3px; }
 
         body {
-            font-family: 'Inter', sans-serif;
-            background-color: var(--bg-deep);
+            background-color: var(--bg-void);
+            font-family: 'Outfit', sans-serif;
             color: var(--text-main);
             overflow-x: hidden;
             min-height: 100vh;
+            background-image: 
+                linear-gradient(rgba(0, 242, 234, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 242, 234, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
         }
 
-        /* Animated Background Canvas */
-        #particles {
-            position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            z-index: -1;
-            background: radial-gradient(circle at 50% 10%, #0d1b2e 0%, #02060b 100%);
+        /* Typography Utilities */
+        .font-mono { font-family: 'Share Tech Mono', monospace; }
+        .text-cyan { color: var(--neon-cyan); }
+        .text-amber { color: var(--neon-amber); }
+        .text-red { color: var(--neon-red); }
+        .text-blue { color: var(--neon-blue); }
+
+        /* Animations */
+        @keyframes scanline {
+            0% { transform: translateY(-100%); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateY(100%); opacity: 0; }
+        }
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 0 0 rgba(0, 242, 234, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(0, 242, 234, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 242, 234, 0); }
+        }
+        @keyframes flow-line {
+            0% { stroke-dashoffset: 1000; }
+            100% { stroke-dashoffset: 0; }
+        }
+        @keyframes fade-in-up {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        h1, h2, h3, h4 { font-family: 'Space Grotesk', sans-serif; letter-spacing: -0.5px; }
+        .container { max-width: 1600px; margin: 0 auto; padding: 20px; position: relative; z-index: 5; }
 
         /* =========================================
-           3. UI COMPONENTS
+           2. HEADER
            ========================================= */
-        .container { max-width: 1400px; margin: 0 auto; padding: 0 30px; position: relative; z-index: 2; }
-
-        /* HEADER */
         header {
-            padding: 25px 0;
-            border-bottom: var(--glass-border);
-            background: rgba(5, 11, 20, 0.8);
-            backdrop-filter: var(--glass-blur);
-            position: sticky; top: 0; z-index: 100;
+            border-bottom: var(--border-tech);
+            padding-bottom: 20px;
+            margin-bottom: 40px;
+            display: flex; justify-content: space-between; align-items: flex-end;
+            background: linear-gradient(180deg, rgba(2,4,8,0.9) 0%, rgba(2,4,8,0) 100%);
         }
         
-        .nav-wrap { display: flex; justify-content: space-between; align-items: center; }
+        .brand h1 { font-size: 3rem; letter-spacing: -1px; line-height: 1; text-transform: uppercase; }
+        .brand span { font-size: 1rem; letter-spacing: 4px; color: var(--neon-blue); font-weight: 600; }
         
-        .brand { display: flex; align-items: center; gap: 15px; }
-        .brand-icon {
-            width: 40px; height: 40px;
-            background: var(--primary);
-            border-radius: 8px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.2rem;
-            box-shadow: 0 0 20px rgba(0, 102, 204, 0.4);
-        }
-        .brand-text h2 { font-size: 1.4rem; font-weight: 700; line-height: 1; }
-        .brand-text span { font-size: 0.8rem; color: var(--text-sec); letter-spacing: 2px; text-transform: uppercase; }
-
-        /* SEARCH BAR */
-        .search-container { position: relative; width: 350px; }
-        .search-container input {
-            width: 100%;
-            padding: 12px 20px 12px 45px;
-            background: rgba(255,255,255,0.05);
-            border: var(--glass-border);
-            border-radius: 50px;
-            color: white;
-            font-family: inherit;
-            transition: var(--anim-speed);
-        }
-        .search-container input:focus {
-            background: rgba(255,255,255,0.1);
-            border-color: var(--primary-glow);
-            box-shadow: 0 0 15px rgba(0, 204, 255, 0.2);
-        }
-        .search-icon { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: var(--text-sec); }
+        .status-panel { text-align: right; }
+        .status-item { font-size: 0.8rem; color: var(--text-dim); margin-bottom: 4px; }
+        .status-item i { margin-right: 8px; width: 15px; text-align: center; }
 
         /* =========================================
-           4. CALCULATOR DASHBOARD
+           3. MAIN LAYOUT
            ========================================= */
-        .dashboard-grid {
+        .grid-main {
             display: grid;
-            grid-template-columns: 1.2fr 1.8fr;
+            grid-template-columns: 320px 1fr 380px;
             gap: 30px;
-            margin: 50px 0;
-            animation: slideUp 0.8s ease-out;
+            min-height: 600px;
         }
 
-        /* Common Glass Card Style */
-        .glass-panel {
-            background: var(--bg-card);
-            backdrop-filter: var(--glass-blur);
-            border: var(--glass-border);
-            border-radius: 20px;
-            padding: 35px;
-            box-shadow: var(--shadow-card);
+        .panel {
+            background: var(--bg-panel-glass);
+            border: var(--border-tech);
+            backdrop-filter: var(--backdrop);
+            border-radius: 4px;
             position: relative;
-            overflow: hidden;
-        }
-        
-        /* Subtle glowing top border */
-        .glass-panel::before {
-            content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
-            background: linear-gradient(90deg, transparent, var(--primary-glow), transparent);
-            opacity: 0.5;
+            display: flex; flex-direction: column;
         }
 
-        .panel-title { display: flex; align-items: center; gap: 10px; margin-bottom: 25px; color: var(--accent); }
-        .panel-title i { filter: drop-shadow(0 0 8px var(--accent)); }
+        /* Decorative Corners */
+        .panel::before { content:''; position: absolute; top: -1px; left: -1px; width: 10px; height: 10px; border-top: 2px solid var(--neon-cyan); border-left: 2px solid var(--neon-cyan); }
+        .panel::after { content:''; position: absolute; bottom: -1px; right: -1px; width: 10px; height: 10px; border-bottom: 2px solid var(--neon-cyan); border-right: 2px solid var(--neon-cyan); }
 
-        /* Form Elements */
-        .input-group { margin-bottom: 20px; }
-        .input-group label { display: block; color: var(--text-sec); font-size: 0.85rem; margin-bottom: 8px; font-weight: 500; }
+        .panel-head {
+            padding: 15px 20px;
+            border-bottom: var(--border-tech);
+            background: rgba(0, 242, 234, 0.03);
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .panel-title { font-family: 'Share Tech Mono'; font-size: 0.9rem; color: var(--neon-cyan); text-transform: uppercase; letter-spacing: 1px; }
+
+        /* =========================================
+           4. LEFT PANEL: CONTROLS
+           ========================================= */
+        .control-wrap { padding: 30px 20px; flex: 1; display: flex; flex-direction: column; gap: 25px; }
         
-        select, input[type="date"] {
-            width: 100%;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255,255,255,0.1);
-            color: white;
-            padding: 14px;
-            border-radius: 10px;
-            cursor: pointer;
+        .input-box label { display: block; color: var(--text-dim); font-size: 0.75rem; text-transform: uppercase; margin-bottom: 8px; font-weight: 700; }
+        select, input {
+            width: 100%; background: #050910; border: 1px solid #1f293a; color: white;
+            padding: 15px; font-family: 'Outfit'; font-size: 1rem; border-radius: 2px;
             transition: 0.3s;
         }
-        select:hover, input[type="date"]:hover { border-color: var(--primary); }
-        option { background: var(--bg-deep); }
-
-        /* Result Display */
-        .result-box {
-            margin-top: 30px;
-            background: rgba(0, 242, 255, 0.05);
-            border-radius: 12px;
+        select:focus, input:focus { border-color: var(--neon-cyan); outline: none; box-shadow: 0 0 15px rgba(0,242,234,0.1); }
+        
+        .calc-display {
+            margin-top: auto;
+            border: 1px dashed #1f293a;
             padding: 20px;
-            border-left: 4px solid var(--accent);
-            opacity: 0; transform: translateY(10px);
-            transition: 0.5s all;
+            text-align: center;
         }
-        .result-box.active { opacity: 1; transform: translateY(0); }
-        .result-date { font-size: 2rem; font-weight: 700; color: white; display: block; margin: 5px 0; }
-        .result-label { font-size: 0.75rem; text-transform: uppercase; color: var(--text-sec); letter-spacing: 1px; }
+        .date-big { font-size: 2rem; font-weight: 800; color: white; margin: 10px 0; display: block; }
 
         /* =========================================
-           5. PROCESS VISUALIZER (Right Side)
+           5. CENTER PANEL: ROUTING NETWORK (VISUALIZER)
            ========================================= */
-        .process-track {
+        .network-stage {
+            flex: 1;
+            position: relative;
+            background: radial-gradient(circle at center, #101926 0%, #0a111c 100%);
+            overflow: hidden;
+            padding: 40px;
             display: flex;
+            flex-direction: column;
             justify-content: space-between;
-            align-items: flex-start;
-            position: relative;
-            margin-top: 40px;
-        }
-        /* Connection Line */
-        .process-track::after {
-            content: ''; position: absolute; top: 25px; left: 40px; right: 40px;
-            height: 3px; background: rgba(255,255,255,0.1); z-index: 0;
-            border-radius: 2px;
         }
 
-        .step {
-            position: relative; z-index: 2;
-            display: flex; flex-direction: column; align-items: center;
-            width: 20%;
-            transition: 0.5s;
-            opacity: 0.4;
+        /* SVG Overlay for drawing lines */
+        .svg-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 1;
+        }
+        .route-line {
+            fill: none; stroke: #1f293a; stroke-width: 2; stroke-linecap: round;
+            transition: stroke 0.5s;
+        }
+        .route-line.active {
+            stroke: var(--neon-cyan);
+            stroke-width: 3;
+            filter: drop-shadow(0 0 5px var(--neon-cyan));
+            stroke-dasharray: 10;
+            animation: flow-line 20s linear infinite;
         }
 
-        .step-icon-box {
-            width: 50px; height: 50px;
-            background: var(--bg-deep);
-            border: 2px solid rgba(255,255,255,0.2);
-            border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 1.2rem; color: var(--text-sec);
-            margin-bottom: 15px;
-            transition: 0.5s;
-        }
-
-        .step-text h5 { font-size: 0.9rem; margin-bottom: 4px; }
-        .step-text span { font-size: 0.75rem; color: var(--text-sec); }
-
-        /* Active State */
-        .step.active { opacity: 1; }
-        .step.active .step-icon-box {
-            border-color: var(--accent);
-            color: var(--accent);
-            box-shadow: 0 0 25px rgba(0, 242, 255, 0.2);
-            transform: scale(1.1);
-        }
-
-        /* Skipped State */
-        .step.skipped .step-icon-box { border-color: #333; color: #444; background: #000; }
-        .step.skipped h5 { text-decoration: line-through; color: #555; }
-
-        /* =========================================
-           6. COUNTRY GRID SYSTEM
-           ========================================= */
-        .grid-section-title {
-            margin-bottom: 30px;
-            display: flex; justify-content: space-between; align-items: flex-end;
-            border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 15px;
+        /* Network Nodes */
+        .node-row {
+            display: flex; justify-content: space-around; position: relative; z-index: 2;
         }
         
-        .grid-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-            gap: 25px;
-            padding-bottom: 100px;
+        .node {
+            width: 120px; text-align: center; opacity: 0.4; transition: 0.5s;
+            position: relative;
         }
+        .node-icon {
+            width: 50px; height: 50px; margin: 0 auto 10px;
+            background: #0a111c; border: 1px solid var(--text-dim);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            font-size: 1.2rem;
+        }
+        .node-label { font-size: 0.8rem; font-weight: 700; color: var(--text-dim); }
+        
+        .node.active { opacity: 1; transform: scale(1.1); }
+        .node.active .node-icon {
+            border-color: var(--neon-cyan); color: var(--neon-cyan);
+            background: rgba(0, 242, 234, 0.1);
+            box-shadow: 0 0 20px rgba(0, 242, 234, 0.2);
+            animation: pulse-glow 2s infinite;
+        }
+        .node.active .node-label { color: white; }
 
-        .country-card {
-            background: rgba(255,255,255,0.03);
+        .ocean-transit {
+            flex: 1; display: flex; align-items: center; justify-content: center;
+            position: relative;
+        }
+        .ship-marker {
+            font-size: 2rem; color: var(--neon-blue);
+            animation: float-ship 3s ease-in-out infinite;
+        }
+        @keyframes float-ship { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+
+        /* =========================================
+           6. RIGHT PANEL: BREAKDOWN
+           ========================================= */
+        .timeline-scroll { padding: 0; overflow-y: auto; max-height: 600px; }
+        
+        .timeline-item {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            display: grid; grid-template-columns: 40px 1fr auto;
+            align-items: center;
+            opacity: 0.5; transition: 0.3s;
+        }
+        .timeline-item.active { opacity: 1; background: rgba(0, 242, 234, 0.02); }
+        
+        .t-icon { color: var(--text-dim); }
+        .timeline-item.active .t-icon { color: var(--neon-cyan); }
+        
+        .t-content h4 { font-size: 0.8rem; color: #8892b0; margin-bottom: 4px; }
+        .t-content span { font-size: 1rem; font-weight: 600; color: white; }
+        
+        .t-days { font-family: 'Share Tech Mono'; font-size: 0.9rem; color: var(--neon-blue); text-align: right; }
+
+        /* =========================================
+           7. BOTTOM GRID: CARDS
+           ========================================= */
+        .cards-area { margin-top: 40px; }
+        .cards-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;
+        }
+        
+        .info-card {
+            background: rgba(255,255,255,0.01);
             border: 1px solid rgba(255,255,255,0.05);
-            border-radius: 16px;
-            padding: 25px;
-            position: relative;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            opacity: 0; transform: translateY(20px); /* Initial state for animation */
+            padding: 20px; border-radius: 4px;
+            position: relative; overflow: hidden;
+            transition: 0.4s;
+            animation: fade-in-up 0.6s backwards;
         }
-
-        /* Card Hover Effect */
-        .country-card:hover {
-            transform: translateY(-10px) scale(1.02);
-            background: rgba(255,255,255,0.06);
-            border-color: var(--primary);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        .info-card:hover {
+            border-color: var(--neon-cyan);
+            background: rgba(0, 242, 234, 0.05);
+            transform: translateY(-5px);
         }
-
-        .card-header {
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 20px;
-        }
-        .flag-box { font-size: 2rem; }
         
-        .status-pill {
-            font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
-            padding: 5px 12px; border-radius: 50px;
-        }
-        .pill-blue { background: rgba(41, 121, 255, 0.2); color: var(--st-info); border: 1px solid rgba(41, 121, 255, 0.4); }
-        .pill-purple { background: rgba(156, 39, 176, 0.2); color: #e040fb; border: 1px solid rgba(156, 39, 176, 0.4); }
-        .pill-red { background: rgba(255, 51, 102, 0.2); color: var(--st-danger); border: 1px solid rgba(255, 51, 102, 0.4); }
-
-        .info-row {
-            display: flex; justify-content: space-between; align-items: center;
-            padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
-        }
-        .info-row:last-child { border: none; }
+        .card-top { display: flex; justify-content: space-between; margin-bottom: 15px; }
+        .card-flag { font-size: 1.5rem; }
+        .card-code { font-family: 'Share Tech Mono'; font-size: 1.2rem; font-weight: 700; color: white; }
         
-        .lbl { font-size: 0.85rem; color: var(--text-sec); }
-        .val { font-size: 0.9rem; font-weight: 600; }
+        .tag { font-size: 0.65rem; padding: 2px 6px; border-radius: 2px; text-transform: uppercase; font-weight: 700; }
+        .tag-gray { background: #1f293a; color: #ccc; }
+        .tag-red { background: rgba(255, 0, 85, 0.2); color: var(--neon-red); }
+        .tag-amber { background: rgba(255, 174, 0, 0.2); color: var(--neon-amber); }
 
-        .text-warn { color: var(--st-warning); }
-        .text-good { color: var(--st-success); }
+        .stat-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.8rem; }
+        .stat-lbl { color: var(--text-dim); }
+        .stat-val { color: var(--neon-cyan); font-weight: 600; font-family: 'Share Tech Mono'; }
 
-        /* Animation Keyframes */
-        @keyframes slideUp { from { opacity: 0; transform: translateY(40px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes fadeCard { to { opacity: 1; transform: translateY(0); } }
-
-        /* =========================================
-           7. MEDIA QUERIES
-           ========================================= */
-        @media (max-width: 1000px) {
-            .dashboard-grid { grid-template-columns: 1fr; }
-            .process-track { overflow-x: auto; padding-bottom: 20px; }
-            .process-track::after { width: 100%; min-width: 600px; }
-            .step { min-width: 100px; }
+        /* Media Queries */
+        @media (max-width: 1200px) {
+            .grid-main { grid-template-columns: 1fr; }
+            .network-stage { min-height: 400px; order: -1; }
         }
     </style>
 </head>
 <body>
-    
-    <canvas id="particles"></canvas>
-
-    <header>
-        <div class="container nav-wrap">
-            <div class="brand">
-                <div class="brand-icon"><i class="fas fa-cubes"></i></div>
-                <div class="brand-text">
-                    <h2>AUTOCOM</h2>
-                    <span>EAST AFRICA</span>
-                </div>
-            </div>
-            <div class="search-container">
-                <i class="fas fa-search search-icon"></i>
-                <input type="text" id="searchInput" placeholder="Search country..." onkeyup="filterGrid()">
-            </div>
-        </div>
-    </header>
 
     <div class="container">
         
-        <div class="dashboard-grid">
+        <header>
+            <div class="brand">
+                <i class="fas fa-ship fa-spin text-cyan" style="font-size:2rem; float:left; margin-right:20px; animation-duration: 10s;"></i>
+                <h1>AUTOCOM <span class="text-cyan"></span></h1>
+                <span class="font-mono">LOGISTICS NETWORK // EAST AFRICA DIVISION</span>
+            </div>
+            <div class="status-panel font-mono">
+                <div class="status-item"><i class="fas fa-signal text-cyan"></i> NETWORK ONLINE</div>
+                <div class="status-item"><i class="fas fa-database text-blue"></i> DB VER: 2025.12.1</div>
+                <div class="status-item"><i class="fas fa-clock text-amber"></i> UTC +9</div>
+            </div>
+        </header>
+
+        <div class="grid-main">
             
-            <div class="glass-panel">
-                <div class="panel-title">
-                    <i class="fas fa-calculator"></i>
-                    <h4>Smart Schedule</h4>
+            <div class="panel">
+                <div class="panel-head">
+                    <span class="panel-title"><i class="fas fa-sliders-h"></i> PARAMETERS</span>
                 </div>
+                <div class="control-wrap">
+                    <div class="input-box">
+                        <label>DESTINATION MARKET</label>
+                        <select id="countrySelect" onchange="runSimulation()">
+                            <option value="" disabled selected>SELECT DESTINATION...</option>
+                            </select>
+                    </div>
+                    <div class="input-box">
+                        <label>REQUIRED ARRIVAL</label>
+                        <input type="date" id="arrivalDate" onchange="runSimulation()">
+                    </div>
 
-                <div class="input-group">
-                    <label>DESTINATION MARKET</label>
-                    <select id="countrySelect" onchange="calculateLogic()">
-                        <option value="ke">Kenya (Mombasa)</option>
-                        <option value="tz">Tanzania (Dar es Salaam)</option>
-                        <option value="ug">Uganda (via Mombasa)</option>
-                        <option value="zm">Zambia (via Dar)</option>
-                        <option value="zw">Zimbabwe (via Dar)</option>
-                        <option value="drc">DR Congo (via Dar)</option>
-                        <option value="bdi">Burundi (via Dar)</option>
-                        <option value="mz">Mozambique (Maputo)</option>
-                    </select>
-                </div>
-
-                <div class="input-group">
-                    <label>TARGET ARRIVAL MONTH</label>
-                    <input type="date" id="arrivalDate" onchange="calculateLogic()">
-                </div>
-
-                <div class="result-box" id="resultBox">
-                    <span class="result-label">Purchase Deadline</span>
-                    <span class="result-date" id="outputDate">--</span>
-                    <p style="font-size:0.85rem; color: #fff; opacity:0.8; margin-top:5px;" id="outputNote">
-                        Calculating...
-                    </p>
+                    <div style="flex:1;"></div> <div class="calc-display">
+                        <label class="font-mono text-cyan">PURCHASE DEADLINE</label>
+                        <span id="resDate" class="date-big">-- / --</span>
+                        <div id="resNote" style="font-size:0.8rem; color:var(--text-dim)">WAITING FOR INPUT</div>
+                    </div>
                 </div>
             </div>
 
-            <div class="glass-panel">
-                <div class="panel-title">
-                    <i class="fas fa-project-diagram"></i>
-                    <h4 id="vizTitle">Process Visualization</h4>
+            <div class="panel">
+                <div class="panel-head">
+                    <span class="panel-title"><i class="fas fa-project-diagram"></i> ROUTING NETWORK</span>
+                    <span class="font-mono text-dim" id="routeText">STANDBY</span>
                 </div>
                 
-                <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; margin-bottom: 20px;">
-                    <p style="font-size: 0.9rem; color: var(--text-sec);">
-                        <i class="fas fa-info-circle" style="color: var(--primary);"></i> 
-                        The timeline below adapts automatically based on Country regulations (Inspection) and Geography (Inland Transit).
-                    </p>
-                </div>
+                <div class="network-stage">
+                    <svg class="svg-overlay" id="routeSvg">
+                        <line x1="50%" y1="15%" x2="50%" y2="50%" class="route-line" id="line-ocean" />
+                        
+                        <line x1="50%" y1="50%" x2="15%" y2="85%" class="route-line" id="line-west" /> <line x1="50%" y1="50%" x2="30%" y2="85%" class="route-line" id="line-sw" />   <line x1="50%" y1="50%" x2="50%" y2="85%" class="route-line" id="line-south" /><line x1="50%" y1="50%" x2="70%" y2="85%" class="route-line" id="line-maputo" /><line x1="50%" y1="50%" x2="85%" y2="85%" class="route-line" id="line-east" />  </svg>
 
-                <div class="process-track">
-                    <div class="step active">
-                        <div class="step-icon-box"><i class="fas fa-gavel"></i></div>
-                        <div class="step-text"><h5>Buy</h5><span>Day 1</span></div>
+                    <div class="node-row">
+                        <div class="node active">
+                            <div class="node-icon"><i class="fas fa-sun"></i></div>
+                            <div class="node-label">JAPAN</div>
+                        </div>
                     </div>
-                    <div class="step active" id="stepInspect">
-                        <div class="step-icon-box"><i class="fas fa-microscope"></i></div>
-                        <div class="step-text"><h5 id="lblInspect">Insp.</h5><span>Processing</span></div>
+
+                    <div class="ocean-transit">
+                        <i class="fas fa-ship ship-marker" id="shipIcon"></i>
                     </div>
-                    <div class="step active">
-                        <div class="step-icon-box"><i class="fas fa-ship"></i></div>
-                        <div class="step-text"><h5>Ocean</h5><span>Transit</span></div>
-                    </div>
-                    <div class="step active">
-                        <div class="step-icon-box"><i class="fas fa-anchor"></i></div>
-                        <div class="step-text"><h5>Port</h5><span>Clearance</span></div>
-                    </div>
-                    <div class="step" id="stepInland">
-                        <div class="step-icon-box"><i class="fas fa-truck-fast"></i></div>
-                        <div class="step-text"><h5>Inland</h5><span>Trucking</span></div>
+
+                    <div class="node-row" id="portRow">
+                        <div class="node" id="node-tema">
+                            <div class="node-icon">GH</div>
+                            <div class="node-label">TEMA</div>
+                        </div>
+                        <div class="node" id="node-walvis">
+                            <div class="node-icon">NA</div>
+                            <div class="node-label">WALVIS</div>
+                        </div>
+                        <div class="node" id="node-durban">
+                            <div class="node-icon">ZA</div>
+                            <div class="node-label">DURBAN</div>
+                        </div>
+                        <div class="node" id="node-maputo">
+                            <div class="node-icon">MZ</div>
+                            <div class="node-label">MAPUTO</div>
+                        </div>
+                        <div class="node" id="node-east">
+                            <div class="node-icon">EA</div>
+                            <div class="node-label">MSA/DAR</div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="grid-section-title">
-            <h3>Active Regulations Database</h3>
-            <span style="font-size: 0.8rem; color: var(--text-sec);">LIVE DATA // V.2025.1</span>
-        </div>
-
-        <div class="grid-container" id="gridContainer">
+            <div class="panel">
+                <div class="panel-head">
+                    <span class="panel-title"><i class="fas fa-list-ul"></i> TIME SEQUENCE</span>
+                </div>
+                <div class="timeline-scroll">
+                    <div class="timeline-item active">
+                        <div class="t-icon"><i class="fas fa-file-signature"></i></div>
+                        <div class="t-content">
+                            <h4>FINANCIAL</h4>
+                            <span>Payment Clear</span>
+                        </div>
+                        <div class="t-days">3-7 D</div>
+                    </div>
+                    <div class="timeline-item" id="step-inspect">
+                        <div class="t-icon"><i class="fas fa-microscope"></i></div>
+                        <div class="t-content">
+                            <h4>INSPECTION</h4>
+                            <span id="txt-inspect">Inspection</span>
+                        </div>
+                        <div class="t-days" id="day-inspect">--</div>
+                    </div>
+                    <div class="timeline-item active">
+                        <div class="t-icon"><i class="fas fa-anchor"></i></div>
+                        <div class="t-content">
+                            <h4>LOGISTICS</h4>
+                            <span>Booking Queue</span>
+                        </div>
+                        <div class="t-days">7-21 D</div>
+                    </div>
+                    <div class="timeline-item active">
+                        <div class="t-icon"><i class="fas fa-water"></i></div>
+                        <div class="t-content">
+                            <h4>TRANSIT</h4>
+                            <span>Sailing</span>
+                        </div>
+                        <div class="t-days" id="day-sail">~30 D</div>
+                    </div>
+                    <div class="timeline-item" id="step-inland">
+                        <div class="t-icon"><i class="fas fa-truck-moving"></i></div>
+                        <div class="t-content">
+                            <h4>LAST MILE</h4>
+                            <span>Inland Trucking</span>
+                        </div>
+                        <div class="t-days" id="day-inland">--</div>
+                    </div>
+                    <div class="timeline-item active" style="background:rgba(0, 242, 234, 0.05); border:none;">
+                        <div class="t-icon text-cyan"><i class="fas fa-check-circle"></i></div>
+                        <div class="t-content">
+                            <h4 class="text-cyan">ESTIMATED CYCLE</h4>
+                            <span class="text-cyan">TOTAL TIME</span>
+                        </div>
+                        <div class="t-days text-cyan font-mono" style="font-size:1.2rem;" id="day-total">0 DAYS</div>
+                    </div>
+                </div>
             </div>
+
+        </div>
+
+        <div class="cards-area">
+            <h3 class="font-mono text-dim" style="margin-bottom:20px;">REGIONAL PROTOCOLS DB</h3>
+            <div class="cards-grid" id="cardGrid">
+                </div>
+        </div>
 
     </div>
 
     <script>
         // ============================================
-        // 1. DATA CONFIGURATION
+        // 1. DATA MATRIX
         // ============================================
         const db = [
-            { id: 'ke', name: 'Kenya', flag: '🇰🇪', port: 'Mombasa', type: 'Coastal', inspect: 'QISJ (Strict)', age: 'Max 8 Years', time: 55 },
-            { id: 'tz', name: 'Tanzania', flag: '🇹🇿', port: 'Dar es Salaam', type: 'Coastal', inspect: 'EAA Only', age: 'No Limit', time: 55 },
-            { id: 'ug', name: 'Uganda', flag: '🇺🇬', port: 'Mombasa', type: 'Landlocked', inspect: 'EAA Only', age: 'Max 15 Years', time: 70 },
-            { id: 'zm', name: 'Zambia', flag: '🇿🇲', port: 'Dar es Salaam', type: 'Landlocked', inspect: 'Optional', age: 'No Limit', time: 75 },
-            { id: 'zw', name: 'Zimbabwe', flag: '🇿🇼', port: 'Dar/Durban', type: 'Landlocked', inspect: 'Optional', age: 'No Limit', time: 75 },
-            { id: 'drc', name: 'DR Congo', flag: '🇨🇩', port: 'Dar es Salaam', type: 'Landlocked', inspect: 'None', age: 'No Limit', time: 80 },
-            { id: 'bdi', name: 'Burundi', flag: '🇧🇮', port: 'Dar es Salaam', type: 'Landlocked', inspect: 'None', age: 'Max 10 Years', time: 75 },
-            { id: 'mz', name: 'Mozambique', flag: '🇲🇿', port: 'Maputo', type: 'Special', inspect: 'None', age: 'No Limit', time: 90 }
+            // EAST (Mombasa/Dar)
+            { id: 'ke', name: 'KENYA', flag: '🇰🇪', port: 'MOMBASA', node: 'node-east', line: 'line-east', inspect: 'QISJ', sail: 30, inland: 0, total: 55 },
+            { id: 'tz', name: 'TANZANIA', flag: '🇹🇿', port: 'DAR ES SALAAM', node: 'node-east', line: 'line-east', inspect: 'EAA', sail: 30, inland: 0, total: 55 },
+            { id: 'ug', name: 'UGANDA', flag: '🇺🇬', port: 'MOMBASA', node: 'node-east', line: 'line-east', inspect: 'EAA', sail: 30, inland: 15, total: 70 },
+            { id: 'ss', name: 'S. SUDAN', flag: '🇸🇸', port: 'MOMBASA', node: 'node-east', line: 'line-east', inspect: 'EAA', sail: 30, inland: 25, total: 85 },
+            
+            // SOUTH-CENTRAL (Dar/Maputo)
+            { id: 'zm', name: 'ZAMBIA', flag: '🇿🇲', port: 'DAR ES SALAAM', node: 'node-east', line: 'line-east', inspect: 'Optional', sail: 35, inland: 20, total: 80 },
+            { id: 'mz', name: 'MOZAMBIQUE', flag: '🇲🇿', port: 'MAPUTO', node: 'node-maputo', line: 'line-maputo', inspect: 'None', sail: 40, inland: 0, total: 90 },
+
+            // SOUTH (Durban)
+            { id: 'zw', name: 'ZIMBABWE', flag: '🇿🇼', port: 'DURBAN', node: 'node-durban', line: 'line-south', inspect: 'Optional', sail: 35, inland: 15, total: 80 },
+            { id: 'bw', name: 'BOTSWANA', flag: '🇧🇼', port: 'DURBAN', node: 'node-durban', line: 'line-south', inspect: 'None', sail: 35, inland: 10, total: 65 },
+
+            // WEST (Tema/Walvis)
+            { id: 'na', name: 'NAMIBIA', flag: '🇳🇦', port: 'WALVIS BAY', node: 'node-walvis', line: 'line-sw', inspect: 'None', sail: 45, inland: 0, total: 60 },
+            { id: 'gh', name: 'GHANA', flag: '🇬🇭', port: 'TEMA', node: 'node-tema', line: 'line-west', inspect: 'None', sail: 50, inland: 0, total: 90 },
         ];
 
         // ============================================
-        // 2. GRID RENDERER (Clean, No Notes)
+        // 2. INITIALIZE
         // ============================================
-        const gridEl = document.getElementById('gridContainer');
+        const sel = document.getElementById('countrySelect');
+        const grid = document.getElementById('cardGrid');
 
-        function renderGrid(data) {
-            gridEl.innerHTML = '';
-            data.forEach((item, index) => {
-                // Determine styling based on type
-                let pillClass = 'pill-blue';
-                if(item.type === 'Landlocked') pillClass = 'pill-purple';
-                if(item.type === 'Special') pillClass = 'pill-red'; // For Mozambique
+        // Populate Select & Grid
+        db.sort((a,b) => a.name.localeCompare(b.name)).forEach((c, idx) => {
+            // Select Option
+            let opt = document.createElement('option');
+            opt.value = c.id;
+            opt.innerText = c.name;
+            sel.appendChild(opt);
 
-                // Special Text Coloring for Inspection
-                let inspectColor = 'val';
-                if(item.inspect === 'None') inspectColor = 'val text-sec';
-                if(item.inspect.includes('Strict')) inspectColor = 'val text-warn';
-
-                const card = document.createElement('div');
-                card.className = 'country-card';
-                card.style.animation = `fadeCard 0.5s ease-out forwards ${index * 0.1}s`; // Staggered delay
-
-                card.innerHTML = `
-                    <div class="card-header">
-                        <div class="flag-box">${item.flag}</div>
-                        <span class="status-pill ${pillClass}">${item.type}</span>
-                    </div>
-                    <h3 style="margin-bottom: 15px;">${item.name}</h3>
-                    
-                    <div class="info-row">
-                        <span class="lbl">Inspection</span>
-                        <span class="${inspectColor}">${item.inspect}</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="lbl">Age Limit</span>
-                        <span class="val">${item.age}</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="lbl">Est. Time</span>
-                        <span class="val">${item.time} Days</span>
-                    </div>
-                    <div class="info-row">
-                        <span class="lbl">Port</span>
-                        <span class="val" style="color:var(--primary-glow)">${item.port}</span>
-                    </div>
-                `;
-                gridEl.appendChild(card);
-            });
-        }
-
-        renderGrid(db);
-
-        // Filter Logic
-        function filterGrid() {
-            const term = document.getElementById('searchInput').value.toLowerCase();
-            const filtered = db.filter(i => i.name.toLowerCase().includes(term));
-            renderGrid(filtered);
-        }
-
-        // ============================================
-        // 3. CALCULATOR & VISUALIZER LOGIC
-        // ============================================
-        function calculateLogic() {
-            const code = document.getElementById('countrySelect').value;
-            const dateVal = document.getElementById('arrivalDate').value;
-            const resultBox = document.getElementById('resultBox');
+            // Card
+            let card = document.createElement('div');
+            card.className = 'info-card';
+            card.style.animationDelay = (idx * 0.05) + 's';
             
-            // UI Elements for Visualizer
-            const stepInspect = document.getElementById('stepInspect');
-            const lblInspect = document.getElementById('lblInspect');
-            const stepInland = document.getElementById('stepInland');
+            // Inspection Badge Color
+            let tagClass = 'tag-gray';
+            if(c.inspect === 'QISJ') tagClass = 'tag-red';
+            if(c.inspect === 'EAA') tagClass = 'tag-amber';
 
-            // Find country data
-            const country = db.find(c => c.id === code);
+            card.innerHTML = `
+                <div class="card-top">
+                    <span class="card-flag">${c.flag}</span>
+                    <span class="card-code">${c.name}</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-lbl">MAIN PORT</span>
+                    <span class="stat-val text-blue">${c.port}</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-lbl">INSPECTION</span>
+                    <span class="tag ${tagClass}">${c.inspect}</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-lbl">INLAND TRANSIT</span>
+                    <span class="stat-val">${c.inland > 0 ? c.inland + ' DAYS' : 'PORT ONLY'}</span>
+                </div>
+                <div class="stat-row" style="margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.05)">
+                    <span class="stat-lbl">TOTAL BUFFER</span>
+                    <span class="stat-val text-cyan" style="font-size:1rem;">${c.total} DAYS</span>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+
+        // ============================================
+        // 3. SIMULATION ENGINE
+        // ============================================
+        function runSimulation() {
+            const id = sel.value;
+            const arrival = document.getElementById('arrivalDate').value;
+            const data = db.find(x => x.id === id);
             
-            // Logic Flags
-            let totalDays = country.time;
-            let needsInspect = true;
-            let needsInland = (country.type === 'Landlocked');
+            if(!data) return;
 
-            // 1. Handle Inspection Visuals
-            if(country.inspect === 'None') {
-                needsInspect = false;
-                stepInspect.className = 'step skipped';
-                lblInspect.innerText = "None";
-            } else if (country.inspect === 'Optional') {
-                stepInspect.className = 'step active';
-                lblInspect.innerText = "Optional";
+            // A. VISUALIZER: Reset
+            document.querySelectorAll('.route-line').forEach(l => l.classList.remove('active'));
+            document.querySelectorAll('.node').forEach(n => n.classList.remove('active'));
+            
+            // B. VISUALIZER: Activate Path
+            document.getElementById('line-ocean').classList.add('active'); // Always active
+            document.getElementById(data.line).classList.add('active');    // Specific Route
+            
+            // Activate Destination Node
+            setTimeout(() => {
+                document.getElementById(data.node).classList.add('active');
+            }, 300);
+
+            // C. TIMELINE DATA
+            // Inspection
+            const elInspect = document.getElementById('step-inspect');
+            const txtInspect = document.getElementById('txt-inspect');
+            const dayInspect = document.getElementById('day-inspect');
+            
+            if(data.inspect === 'None') {
+                elInspect.classList.remove('active');
+                txtInspect.innerText = "NOT REQUIRED";
+                dayInspect.innerText = "--";
+                dayInspect.style.color = "#555";
             } else {
-                stepInspect.className = 'step active';
-                lblInspect.innerText = country.inspect.split(' ')[0]; // Grab first word (QISJ/EAA)
+                elInspect.classList.add('active');
+                txtInspect.innerText = `REQUIRED (${data.inspect})`;
+                dayInspect.innerText = "7-14 D";
+                dayInspect.style.color = "var(--neon-amber)";
             }
 
-            // 2. Handle Inland Visuals
-            if(needsInland) {
-                stepInland.className = 'step active';
+            // Sailing
+            document.getElementById('day-sail').innerText = `~${data.sail} D`;
+
+            // Inland
+            const elInland = document.getElementById('step-inland');
+            const dayInland = document.getElementById('day-inland');
+            if(data.inland > 0) {
+                elInland.classList.add('active');
+                dayInland.innerText = `+${data.inland} DAYS`;
+                dayInland.style.color = "var(--neon-blue)";
             } else {
-                stepInland.className = 'step'; // dimmed
+                elInland.classList.remove('active');
+                dayInland.innerText = "PORT CLEARANCE";
+                dayInland.style.color = "#555";
             }
 
-            // 3. Calculate Date
-            if(dateVal) {
-                const arrival = new Date(dateVal);
-                const deadline = new Date(arrival);
-                deadline.setDate(arrival.getDate() - totalDays);
+            // Total
+            document.getElementById('day-total').innerText = `${data.total} DAYS`;
+            document.getElementById('routeText').innerText = `ROUTING: JAPAN >> ${data.port}`;
 
-                resultBox.classList.add('active');
-                document.getElementById('outputDate').innerText = deadline.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+            // D. CALCULATE DATE
+            if(arrival) {
+                const arrDate = new Date(arrival);
+                const safeDate = new Date(arrDate);
+                safeDate.setDate(arrDate.getDate() - data.total);
                 
-                let note = `Standard ${totalDays}-day timeline.`;
-                if(code === 'mz') note = "⚠ Warning: Uses monthly sailing schedule.";
-                
-                document.getElementById('outputNote').innerText = note;
+                document.getElementById('resDate').innerText = safeDate.toLocaleDateString('en-GB', {day:'numeric', month:'short'}).toUpperCase();
+                document.getElementById('resNote').innerText = `BUY BY THIS DATE (${data.total} DAY BUFFER)`;
+                document.getElementById('resNote').style.color = "var(--neon-cyan)";
             }
         }
 
-        // ============================================
-        // 4. BACKGROUND PARTICLE SYSTEM
-        // ============================================
-        const canvas = document.getElementById('particles');
-        const ctx = canvas.getContext('2d');
-        let width, height;
-        let particles = [];
-
-        function resize() {
-            width = canvas.width = window.innerWidth;
-            height = canvas.height = window.innerHeight;
-        }
-        window.addEventListener('resize', resize);
-        resize();
-
-        class Particle {
-            constructor() {
-                this.x = Math.random() * width;
-                this.y = Math.random() * height;
-                this.vx = (Math.random() - 0.5) * 0.5;
-                this.vy = (Math.random() - 0.5) * 0.5;
-                this.size = Math.random() * 2;
-                this.alpha = Math.random() * 0.5;
-            }
-            update() {
-                this.x += this.vx;
-                this.y += this.vy;
-                if(this.x < 0) this.x = width;
-                if(this.x > width) this.x = 0;
-                if(this.y < 0) this.y = height;
-                if(this.y > height) this.y = 0;
-            }
-            draw() {
-                ctx.fillStyle = `rgba(0, 204, 255, ${this.alpha})`;
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
-
-        for(let i=0; i<60; i++) particles.push(new Particle());
-
-        function animate() {
-            ctx.clearRect(0, 0, width, height);
-            particles.forEach(p => {
-                p.update();
-                p.draw();
-            });
-            // Draw connections
-            particles.forEach((p1, i) => {
-                particles.slice(i+1).forEach(p2 => {
-                    const dx = p1.x - p2.x;
-                    const dy = p1.y - p2.y;
-                    const dist = Math.sqrt(dx*dx + dy*dy);
-                    if(dist < 150) {
-                        ctx.strokeStyle = `rgba(0, 204, 255, ${0.1 * (1 - dist/150)})`;
-                        ctx.beginPath();
-                        ctx.moveTo(p1.x, p1.y);
-                        ctx.lineTo(p2.x, p2.y);
-                        ctx.stroke();
-                    }
-                });
-            });
-            requestAnimationFrame(animate);
-        }
-        animate();
-
+        console.log("VORTEX SYSTEM: INITIALIZED");
     </script>
 </body>
 </html>
