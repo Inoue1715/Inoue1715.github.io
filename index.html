@@ -1,591 +1,657 @@
+```jsx
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Autocom Vortex | Logistics Network</title>
-    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <title>TT/OK Application Tool | Official Manual</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&family=Poppins:wght@500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
+    
     <style>
-        /* =========================================
-           1. VORTEX THEME CONFIG
-           ========================================= */
         :root {
-            /* Backgrounds */
-            --bg-void: #020408;
-            --bg-panel: #0a111c;
-            --bg-panel-glass: rgba(10, 17, 28, 0.7);
-            
-            /* Accents */
-            --neon-cyan: #00f2ea;
-            --neon-blue: #0075ff;
-            --neon-amber: #ffae00;
-            --neon-red: #ff0055;
-            --neon-green: #00ff9d;
-            
-            /* Text */
-            --text-main: #e1e6eb;
-            --text-dim: #5c677d;
-            
-            /* Borders & Effects */
-            --border-tech: 1px solid rgba(0, 242, 234, 0.15);
-            --glow: 0 0 20px rgba(0, 242, 234, 0.15);
-            --backdrop: blur(10px);
+            --primary-dark: #0f2027;
+            --primary-blue: #203a43;
+            --primary-light: #2c5364;
+            --accent-cyan: #00d2ff;
+            --accent-blue: #3a7bd5;
+            --glass-bg: rgba(255, 255, 255, 0.95);
+            --glass-border: rgba(255, 255, 255, 0.4);
+            --text-main: #2d3436;
+            --text-light: #636e72;
+            --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
         }
 
-        /* Base Reset */
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: var(--bg-void); }
-        ::-webkit-scrollbar-thumb { background: var(--neon-blue); border-radius: 3px; }
-
+        /* --- Global Reset & Body --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; scroll-behavior: smooth; }
+        
         body {
-            background-color: var(--bg-void);
-            font-family: 'Outfit', sans-serif;
+            font-family: 'Inter', sans-serif;
             color: var(--text-main);
-            overflow-x: hidden;
+            background: linear-gradient(-45deg, #000428, #004e92, #2193b0, #6dd5ed);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
             min-height: 100vh;
-            background-image: 
-                linear-gradient(rgba(0, 242, 234, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 242, 234, 0.03) 1px, transparent 1px);
-            background-size: 40px 40px;
+            overflow-x: hidden;
+            display: flex;
         }
 
-        /* Typography Utilities */
-        .font-mono { font-family: 'Share Tech Mono', monospace; }
-        .text-cyan { color: var(--neon-cyan); }
-        .text-amber { color: var(--neon-amber); }
-        .text-red { color: var(--neon-red); }
-        .text-blue { color: var(--neon-blue); }
-
-        /* Animations */
-        @keyframes scanline {
-            0% { transform: translateY(-100%); opacity: 0; }
-            50% { opacity: 1; }
-            100% { transform: translateY(100%); opacity: 0; }
-        }
-        @keyframes pulse-glow {
-            0% { box-shadow: 0 0 0 0 rgba(0, 242, 234, 0.4); }
-            70% { box-shadow: 0 0 0 10px rgba(0, 242, 234, 0); }
-            100% { box-shadow: 0 0 0 0 rgba(0, 242, 234, 0); }
-        }
-        @keyframes flow-line {
-            0% { stroke-dashoffset: 1000; }
-            100% { stroke-dashoffset: 0; }
-        }
-        @keyframes fade-in-up {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
-        .container { max-width: 1600px; margin: 0 auto; padding: 20px; position: relative; z-index: 5; }
-
-        /* =========================================
-           2. HEADER
-           ========================================= */
-        header {
-            border-bottom: var(--border-tech);
-            padding-bottom: 20px;
-            margin-bottom: 40px;
-            display: flex; justify-content: space-between; align-items: flex-end;
-            background: linear-gradient(180deg, rgba(2,4,8,0.9) 0%, rgba(2,4,8,0) 100%);
-        }
-        
-        .brand h1 { font-size: 3rem; letter-spacing: -1px; line-height: 1; text-transform: uppercase; }
-        .brand span { font-size: 1rem; letter-spacing: 4px; color: var(--neon-blue); font-weight: 600; }
-        
-        .status-panel { text-align: right; }
-        .status-item { font-size: 0.8rem; color: var(--text-dim); margin-bottom: 4px; }
-        .status-item i { margin-right: 8px; width: 15px; text-align: center; }
-
-        /* =========================================
-           3. MAIN LAYOUT
-           ========================================= */
-        .grid-main {
-            display: grid;
-            grid-template-columns: 320px 1fr 380px;
-            gap: 30px;
-            min-height: 600px;
-        }
-
-        .panel {
-            background: var(--bg-panel-glass);
-            border: var(--border-tech);
-            backdrop-filter: var(--backdrop);
-            border-radius: 4px;
-            position: relative;
-            display: flex; flex-direction: column;
-        }
-
-        /* Decorative Corners */
-        .panel::before { content:''; position: absolute; top: -1px; left: -1px; width: 10px; height: 10px; border-top: 2px solid var(--neon-cyan); border-left: 2px solid var(--neon-cyan); }
-        .panel::after { content:''; position: absolute; bottom: -1px; right: -1px; width: 10px; height: 10px; border-bottom: 2px solid var(--neon-cyan); border-right: 2px solid var(--neon-cyan); }
-
-        .panel-head {
-            padding: 15px 20px;
-            border-bottom: var(--border-tech);
-            background: rgba(0, 242, 234, 0.03);
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .panel-title { font-family: 'Share Tech Mono'; font-size: 0.9rem; color: var(--neon-cyan); text-transform: uppercase; letter-spacing: 1px; }
-
-        /* =========================================
-           4. LEFT PANEL: CONTROLS
-           ========================================= */
-        .control-wrap { padding: 30px 20px; flex: 1; display: flex; flex-direction: column; gap: 25px; }
-        
-        .input-box label { display: block; color: var(--text-dim); font-size: 0.75rem; text-transform: uppercase; margin-bottom: 8px; font-weight: 700; }
-        select, input {
-            width: 100%; background: #050910; border: 1px solid #1f293a; color: white;
-            padding: 15px; font-family: 'Outfit'; font-size: 1rem; border-radius: 2px;
-            transition: 0.3s;
-        }
-        select:focus, input:focus { border-color: var(--neon-cyan); outline: none; box-shadow: 0 0 15px rgba(0,242,234,0.1); }
-        
-        .calc-display {
-            margin-top: auto;
-            border: 1px dashed #1f293a;
-            padding: 20px;
-            text-align: center;
-        }
-        .date-big { font-size: 2rem; font-weight: 800; color: white; margin: 10px 0; display: block; }
-
-        /* =========================================
-           5. CENTER PANEL: ROUTING NETWORK (VISUALIZER)
-           ========================================= */
-        .network-stage {
-            flex: 1;
-            position: relative;
-            background: radial-gradient(circle at center, #101926 0%, #0a111c 100%);
-            overflow: hidden;
-            padding: 40px;
+        /* --- Sidebar Navigation --- */
+        .sidebar {
+            width: 280px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-right: 1px solid var(--glass-border);
+            height: 100vh;
+            position: fixed;
+            padding: 2rem;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            z-index: 1000;
+            transition: transform 0.3s ease;
         }
 
-        /* SVG Overlay for drawing lines */
-        .svg-overlay {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            pointer-events: none; z-index: 1;
-        }
-        .route-line {
-            fill: none; stroke: #1f293a; stroke-width: 2; stroke-linecap: round;
-            transition: stroke 0.5s;
-        }
-        .route-line.active {
-            stroke: var(--neon-cyan);
-            stroke-width: 3;
-            filter: drop-shadow(0 0 5px var(--neon-cyan));
-            stroke-dasharray: 10;
-            animation: flow-line 20s linear infinite;
-        }
-
-        /* Network Nodes */
-        .node-row {
-            display: flex; justify-content: space-around; position: relative; z-index: 2;
-        }
-        
-        .node {
-            width: 120px; text-align: center; opacity: 0.4; transition: 0.5s;
-            position: relative;
-        }
-        .node-icon {
-            width: 50px; height: 50px; margin: 0 auto 10px;
-            background: #0a111c; border: 1px solid var(--text-dim);
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            font-size: 1.2rem;
-        }
-        .node-label { font-size: 0.8rem; font-weight: 700; color: var(--text-dim); }
-        
-        .node.active { opacity: 1; transform: scale(1.1); }
-        .node.active .node-icon {
-            border-color: var(--neon-cyan); color: var(--neon-cyan);
-            background: rgba(0, 242, 234, 0.1);
-            box-shadow: 0 0 20px rgba(0, 242, 234, 0.2);
-            animation: pulse-glow 2s infinite;
-        }
-        .node.active .node-label { color: white; }
-
-        .ocean-transit {
-            flex: 1; display: flex; align-items: center; justify-content: center;
-            position: relative;
-        }
-        .ship-marker {
-            font-size: 2rem; color: var(--neon-blue);
-            animation: float-ship 3s ease-in-out infinite;
-        }
-        @keyframes float-ship { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-
-        /* =========================================
-           6. RIGHT PANEL: BREAKDOWN
-           ========================================= */
-        .timeline-scroll { padding: 0; overflow-y: auto; max-height: 600px; }
-        
-        .timeline-item {
-            padding: 20px;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
-            display: grid; grid-template-columns: 40px 1fr auto;
+        .logo {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: white;
+            margin-bottom: 3rem;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            display: flex;
             align-items: center;
-            opacity: 0.5; transition: 0.3s;
+            gap: 10px;
         }
-        .timeline-item.active { opacity: 1; background: rgba(0, 242, 234, 0.02); }
-        
-        .t-icon { color: var(--text-dim); }
-        .timeline-item.active .t-icon { color: var(--neon-cyan); }
-        
-        .t-content h4 { font-size: 0.8rem; color: #8892b0; margin-bottom: 4px; }
-        .t-content span { font-size: 1rem; font-weight: 600; color: white; }
-        
-        .t-days { font-family: 'Share Tech Mono'; font-size: 0.9rem; color: var(--neon-blue); text-align: right; }
 
-        /* =========================================
-           7. BOTTOM GRID: CARDS
-           ========================================= */
-        .cards-area { margin-top: 40px; }
-        .cards-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px;
-        }
+        .nav-links { list-style: none; }
+        .nav-links li { margin-bottom: 1rem; }
         
-        .info-card {
-            background: rgba(255,255,255,0.01);
-            border: 1px solid rgba(255,255,255,0.05);
-            padding: 20px; border-radius: 4px;
-            position: relative; overflow: hidden;
-            transition: 0.4s;
-            animation: fade-in-up 0.6s backwards;
+        .nav-links a {
+            text-decoration: none;
+            color: rgba(255,255,255,0.7);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            padding: 12px 15px;
+            border-radius: 12px;
+            transition: all 0.3s ease;
         }
-        .info-card:hover {
-            border-color: var(--neon-cyan);
-            background: rgba(0, 242, 234, 0.05);
-            transform: translateY(-5px);
-        }
-        
-        .card-top { display: flex; justify-content: space-between; margin-bottom: 15px; }
-        .card-flag { font-size: 1.5rem; }
-        .card-code { font-family: 'Share Tech Mono'; font-size: 1.2rem; font-weight: 700; color: white; }
-        
-        .tag { font-size: 0.65rem; padding: 2px 6px; border-radius: 2px; text-transform: uppercase; font-weight: 700; }
-        .tag-gray { background: #1f293a; color: #ccc; }
-        .tag-red { background: rgba(255, 0, 85, 0.2); color: var(--neon-red); }
-        .tag-amber { background: rgba(255, 174, 0, 0.2); color: var(--neon-amber); }
 
-        .stat-row { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.8rem; }
-        .stat-lbl { color: var(--text-dim); }
-        .stat-val { color: var(--neon-cyan); font-weight: 600; font-family: 'Share Tech Mono'; }
-
-        /* Media Queries */
-        @media (max-width: 1200px) {
-            .grid-main { grid-template-columns: 1fr; }
-            .network-stage { min-height: 400px; order: -1; }
+        .nav-links a:hover, .nav-links a.active {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            transform: translateX(10px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
+
+        /* --- Main Content Area --- */
+        main {
+            margin-left: 280px;
+            width: calc(100% - 280px);
+            padding: 3rem 4rem;
+        }
+
+        /* --- Hero Section --- */
+        .hero {
+            text-align: center;
+            padding: 4rem 2rem;
+            margin-bottom: 4rem;
+            color: white;
+            animation: fadeIn 1.2s ease-out;
+        }
+
+        .hero h1 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 3.5rem;
+            margin-bottom: 1rem;
+            background: -webkit-linear-gradient(#fff, #b3e5fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* --- Cards & Containers --- */
+        .glass-panel {
+            background: var(--glass-bg);
+            border-radius: 24px;
+            padding: 3rem;
+            margin-bottom: 3rem;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            position: relative;
+            overflow: hidden;
+            opacity: 0; /* For scroll animation */
+            transform: translateY(30px);
+            transition: all 0.6s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+
+        .glass-panel.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .glass-panel::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 6px; height: 100%;
+            background: linear-gradient(to bottom, var(--accent-cyan), var(--accent-blue));
+        }
+
+        h2 {
+            font-family: 'Poppins', sans-serif;
+            color: var(--primary-blue);
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        h2 i { color: var(--accent-blue); }
+
+        /* --- The Golden Rules Grid --- */
+        .rules-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+        }
+
+        .rule-card {
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            text-align: center;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            border-top: 4px solid transparent;
+        }
+
+        .rule-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 15px 30px rgba(0, 210, 255, 0.2);
+            border-top: 4px solid var(--accent-cyan);
+        }
+
+        .rule-icon {
+            font-size: 2.5rem;
+            color: var(--accent-blue);
+            margin-bottom: 1rem;
+            background: #eef2f5;
+            width: 80px;
+            height: 80px;
+            line-height: 80px;
+            border-radius: 50%;
+            margin: 0 auto 1.5rem auto;
+        }
+
+        /* --- Timeline (Section 2) --- */
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+            border-left: 3px solid #e1e8ed;
+            margin-left: 20px;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 2.5rem;
+            padding-left: 30px;
+        }
+
+        .timeline-marker {
+            position: absolute;
+            left: -44px;
+            top: 0;
+            width: 25px;
+            height: 25px;
+            background: var(--accent-blue);
+            border: 4px solid white;
+            border-radius: 50%;
+            box-shadow: 0 0 0 3px var(--accent-blue);
+        }
+
+        .timeline-content h3 {
+            font-size: 1.3rem;
+            color: var(--primary-blue);
+            margin-bottom: 0.5rem;
+        }
+
+        .timeline-content p { color: var(--text-light); }
+
+        /* --- Alert Boxes --- */
+        .alert {
+            display: flex;
+            align-items: start;
+            gap: 15px;
+            padding: 1.2rem;
+            border-radius: 12px;
+            margin-top: 1rem;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .alert-danger { background: #fff0f0; border-left: 5px solid #ff4757; color: #c0392b; }
+        .alert-warning { background: #fffaf0; border-left: 5px solid #ffa502; color: #b7791f; }
+        
+        /* --- Scenarios Split --- */
+        .scenario-container {
+            display: flex;
+            gap: 30px;
+            margin-top: 2rem;
+        }
+
+        .scenario-card {
+            flex: 1;
+            padding: 2rem;
+            border-radius: 16px;
+            transition: transform 0.3s;
+        }
+
+        .sc-new { background: #e3f2fd; border: 1px solid #bbdefb; }
+        .sc-bal { background: #fbe9e7; border: 1px solid #ffccbc; }
+
+        .scenario-card:hover { transform: scale(1.02); }
+
+        /* --- Status Table --- */
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 16px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th {
+            background: var(--primary-blue);
+            color: white;
+            padding: 1.2rem;
+            text-align: left;
+        }
+
+        td {
+            padding: 1.2rem;
+            border-bottom: 1px solid #eee;
+            color: var(--text-light);
+        }
+
+        .badge {
+            padding: 6px 14px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: white;
+            text-transform: uppercase;
+        }
+
+        .bg-yet { background: #b2bec3; }
+        .bg-sold { background: #ff4757; }
+        .bg-mix { background: #ffa502; }
+        .bg-ok { background: #2ed573; }
+
+        /* --- FAQ Accordion --- */
+        .accordion-item {
+            border: 1px solid #eee;
+            border-radius: 12px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+            background: white;
+        }
+
+        .accordion-header {
+            padding: 1.5rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8fbff;
+            font-weight: 600;
+            color: var(--primary-blue);
+            transition: background 0.3s;
+        }
+
+        .accordion-header:hover { background: #eaf4ff; }
+
+        .accordion-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+            padding: 0 1.5rem;
+            color: var(--text-light);
+        }
+
+        .accordion-item.active .accordion-body {
+            padding: 1.5rem;
+            max-height: 200px; /* Approximate max height */
+            border-top: 1px solid #eee;
+        }
+
+        .accordion-header i { transition: transform 0.3s; }
+        .accordion-item.active .accordion-header i { transform: rotate(180deg); }
+
+        /* --- Mobile Toggle --- */
+        .mobile-toggle {
+            display: none;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: white;
+            padding: 10px;
+            border-radius: 8px;
+            z-index: 2000;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        /* --- Responsive Design --- */
+        @media (max-width: 992px) {
+            .sidebar { transform: translateX(-100%); width: 260px; }
+            .sidebar.active { transform: translateX(0); }
+            main { margin-left: 0; width: 100%; padding: 2rem; }
+            .mobile-toggle { display: block; }
+            .hero h1 { font-size: 2.5rem; }
+            .scenario-container { flex-direction: column; }
+        }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
     </style>
 </head>
 <body>
 
-    <div class="container">
-        
-        <header>
-            <div class="brand">
-                <i class="fas fa-ship fa-spin text-cyan" style="font-size:2rem; float:left; margin-right:20px; animation-duration: 10s;"></i>
-                <h1>AUTOCOM JAPAN <span class="text-cyan"></span></h1>
-                <span class="font-mono">LOGISTICS NETWORK // EAST AFRICA DIVISION</span>
-            </div>
-            <div class="status-panel font-mono">
-                <div class="status-item"><i class="fas fa-signal text-cyan"></i> NETWORK ONLINE</div>
-                <div class="status-item"><i class="fas fa-database text-blue"></i> DB VER: 2025.12.1</div>
-                <div class="status-item"><i class="fas fa-clock text-amber"></i> UTC +9</div>
-            </div>
-        </header>
-
-        <div class="grid-main">
-            
-            <div class="panel">
-                <div class="panel-head">
-                    <span class="panel-title"><i class="fas fa-sliders-h"></i> PARAMETERS</span>
-                </div>
-                <div class="control-wrap">
-                    <div class="input-box">
-                        <label>DESTINATION MARKET</label>
-                        <select id="countrySelect" onchange="runSimulation()">
-                            <option value="" disabled selected>SELECT DESTINATION...</option>
-                            </select>
-                    </div>
-                    <div class="input-box">
-                        <label>REQUIRED ARRIVAL</label>
-                        <input type="date" id="arrivalDate" onchange="runSimulation()">
-                    </div>
-
-                    <div style="flex:1;"></div> <div class="calc-display">
-                        <label class="font-mono text-cyan">PURCHASE DEADLINE</label>
-                        <span id="resDate" class="date-big">-- / --</span>
-                        <div id="resNote" style="font-size:0.8rem; color:var(--text-dim)">WAITING FOR INPUT</div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="panel">
-                <div class="panel-head">
-                    <span class="panel-title"><i class="fas fa-project-diagram"></i> ROUTING NETWORK</span>
-                    <span class="font-mono text-dim" id="routeText">STANDBY</span>
-                </div>
-                
-                <div class="network-stage">
-                    <svg class="svg-overlay" id="routeSvg">
-                        <line x1="50%" y1="15%" x2="50%" y2="50%" class="route-line" id="line-ocean" />
-                        
-                        <line x1="50%" y1="50%" x2="15%" y2="85%" class="route-line" id="line-west" /> <line x1="50%" y1="50%" x2="30%" y2="85%" class="route-line" id="line-sw" />   <line x1="50%" y1="50%" x2="50%" y2="85%" class="route-line" id="line-south" /><line x1="50%" y1="50%" x2="70%" y2="85%" class="route-line" id="line-maputo" /><line x1="50%" y1="50%" x2="85%" y2="85%" class="route-line" id="line-east" />  </svg>
-
-                    <div class="node-row">
-                        <div class="node active">
-                            <div class="node-icon"><i class="fas fa-sun"></i></div>
-                            <div class="node-label">JAPAN</div>
-                        </div>
-                    </div>
-
-                    <div class="ocean-transit">
-                        <i class="fas fa-ship ship-marker" id="shipIcon"></i>
-                    </div>
-
-                    <div class="node-row" id="portRow">
-                        <div class="node" id="node-tema">
-                            <div class="node-icon">GH</div>
-                            <div class="node-label">TEMA</div>
-                        </div>
-                        <div class="node" id="node-walvis">
-                            <div class="node-icon">NA</div>
-                            <div class="node-label">WALVIS</div>
-                        </div>
-                        <div class="node" id="node-durban">
-                            <div class="node-icon">ZA</div>
-                            <div class="node-label">DURBAN</div>
-                        </div>
-                        <div class="node" id="node-maputo">
-                            <div class="node-icon">MZ</div>
-                            <div class="node-label">MAPUTO</div>
-                        </div>
-                        <div class="node" id="node-east">
-                            <div class="node-icon">EA</div>
-                            <div class="node-label">MOMBASA/DAR</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="panel">
-                <div class="panel-head">
-                    <span class="panel-title"><i class="fas fa-list-ul"></i> TIME SEQUENCE</span>
-                </div>
-                <div class="timeline-scroll">
-                    <div class="timeline-item active">
-                        <div class="t-icon"><i class="fas fa-file-signature"></i></div>
-                        <div class="t-content">
-                            <h4>FINANCIAL</h4>
-                            <span>Payment Clear</span>
-                        </div>
-                        <div class="t-days">3-7 D</div>
-                    </div>
-                    <div class="timeline-item" id="step-inspect">
-                        <div class="t-icon"><i class="fas fa-microscope"></i></div>
-                        <div class="t-content">
-                            <h4>INSPECTION</h4>
-                            <span id="txt-inspect">Inspection</span>
-                        </div>
-                        <div class="t-days" id="day-inspect">--</div>
-                    </div>
-                    <div class="timeline-item active">
-                        <div class="t-icon"><i class="fas fa-anchor"></i></div>
-                        <div class="t-content">
-                            <h4>LOGISTICS</h4>
-                            <span>Booking Queue</span>
-                        </div>
-                        <div class="t-days">7-21 D</div>
-                    </div>
-                    <div class="timeline-item active">
-                        <div class="t-icon"><i class="fas fa-water"></i></div>
-                        <div class="t-content">
-                            <h4>TRANSIT</h4>
-                            <span>Sailing</span>
-                        </div>
-                        <div class="t-days" id="day-sail">~30 D</div>
-                    </div>
-                    <div class="timeline-item" id="step-inland">
-                        <div class="t-icon"><i class="fas fa-truck-moving"></i></div>
-                        <div class="t-content">
-                            <h4>LAST MILE</h4>
-                            <span>Inland Trucking</span>
-                        </div>
-                        <div class="t-days" id="day-inland">--</div>
-                    </div>
-                    <div class="timeline-item active" style="background:rgba(0, 242, 234, 0.05); border:none;">
-                        <div class="t-icon text-cyan"><i class="fas fa-check-circle"></i></div>
-                        <div class="t-content">
-                            <h4 class="text-cyan">ESTIMATED CYCLE</h4>
-                            <span class="text-cyan">TOTAL TIME</span>
-                        </div>
-                        <div class="t-days text-cyan font-mono" style="font-size:1.2rem;" id="day-total">0 DAYS</div>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-
-        <div class="cards-area">
-            <h3 class="font-mono text-dim" style="margin-bottom:20px;">REGIONAL PROTOCOLS DB</h3>
-            <div class="cards-grid" id="cardGrid">
-                </div>
-        </div>
-
+    <div class="mobile-toggle" onclick="toggleMenu()">
+        <i class="fas fa-bars fa-lg" style="color: var(--primary-blue);"></i>
     </div>
 
+    <nav class="sidebar" id="sidebar">
+        <div class="logo">
+            <i class="fas fa-layer-group"></i> TT/OK Tool
+        </div>
+        <ul class="nav-links">
+            <li><a href="#intro" class="active"><i class="fas fa-star"></i> Core Principles</a></li>
+            <li><a href="#process"><i class="fas fa-paper-plane"></i> How to Submit</a></li>
+            <li><a href="#balances"><i class="fas fa-wallet"></i> Balances & Top-ups</a></li>
+            <li><a href="#status"><i class="fas fa-table"></i> Search & Status</a></li>
+            <li><a href="#faq"><i class="fas fa-question-circle"></i> FAQ</a></li>
+            <li><a href="#guidelines"><i class="fas fa-camera"></i> Guidelines</a></li>
+        </ul>
+        <div style="margin-top: auto; color: rgba(255,255,255,0.5); font-size: 0.8rem; text-align: center;">
+            v2.0 System Manual<br>&copy; 2025
+        </div>
+    </nav>
+
+    <main>
+
+        <section class="hero">
+            <h1>TT/OK Application Tool</h1>
+            <p>Your comprehensive guide to managing Telegraphic Transfers, tracking payments, and securing vehicle reservations with precision.</p>
+        </section>
+
+        <div class="glass-panel" id="intro">
+            <h2><i class="fas fa-bolt"></i> Core Principles</h2>
+            <p style="margin-bottom: 2rem;">The TT/OK Tool is the backbone of our reservation system. Follow these Golden Rules to ensure accuracy and speed.</p>
+            
+            <div class="rules-grid">
+                <div class="rule-card">
+                    <div class="rule-icon"><i class="fas fa-file-invoice-dollar"></i></div>
+                    <h3>1 TT = 1 App</h3>
+                    <p>Never create multiple applications for the same transfer slip.</p>
+                </div>
+                <div class="rule-card">
+                    <div class="rule-icon"><i class="fas fa-bullseye"></i></div>
+                    <h3>Accuracy First</h3>
+                    <p>Data entered here determines Income Allocation. Double check everything.</p>
+                </div>
+                <div class="rule-card">
+                    <div class="rule-icon"><i class="fas fa-car-side"></i></div>
+                    <h3>One to Many</h3>
+                    <p>Allocate one large payment to multiple cars using "Add more Stocks".</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-panel" id="process">
+            <h2><i class="fas fa-laptop-code"></i> Submission Workflow</h2>
+            <p style="margin-bottom: 2rem;">Follow this sequence when you receive a new TT Copy (deposit or full payment).</p>
+            
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <h3>1. Verification</h3>
+                        <p>Ensure the TT Copy image is clear and meets the minimum deposit requirement.</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <h3>2. Data Entry</h3>
+                        <p>Navigate to <strong>New TT Application</strong>. Enter Currency, Amount, Payer Name, and Date exactly as they appear on the slip.</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <h3>3. Fund Allocation</h3>
+                        <p>Select the Stock No. and amount. <br><em>Multi-car payment?</em> Click <strong>+ Add more Stocks</strong> to split the funds.</p>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <h3>4. Attachments</h3>
+                        <p>Upload the <strong>TT Slip</strong> or <strong>Online Banking Report</strong>.</p>
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-triangle"></i> 
+                            <div><strong>STOP:</strong> Do not upload SWIFT copies here. SWIFT copies are strictly "Supporting Documents" only.</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-marker"></div>
+                    <div class="timeline-content">
+                        <h3>5. Finalize</h3>
+                        <p>Add staff notes (e.g., "Payment 1 of 3") and click <strong>ADD</strong>.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-panel" id="balances">
+            <h2><i class="fas fa-balance-scale"></i> Handling Balances</h2>
+            <p>Choose the correct path based on the source of the money.</p>
+
+            <div class="scenario-container">
+                <div class="scenario-card sc-new">
+                    <div style="font-size: 2rem; color: #2196f3; margin-bottom: 10px;"><i class="fas fa-money-bill-wave"></i></div>
+                    <h3>Scenario A: New Money</h3>
+                    <p>Customer sends a fresh Top-up or Deposit.</p>
+                    <hr style="margin: 15px 0; border: 0; border-top: 1px solid rgba(0,0,0,0.1);">
+                    <p><strong>Action:</strong> Create a <span style="color:#1976d2; font-weight:800;">NEW TT Application</span>.</p>
+                </div>
+
+                <div class="scenario-card sc-bal">
+                    <div style="font-size: 2rem; color: #d35400; margin-bottom: 10px;"><i class="fas fa-history"></i></div>
+                    <h3>Scenario B: Leftover Balance</h3>
+                    <p>Using remaining funds from a previous transfer.</p>
+                    <hr style="margin: 15px 0; border: 0; border-top: 1px solid rgba(0,0,0,0.1);">
+                    <p><strong>Action:</strong> <span style="color:#c0392b; font-weight:800;">Do NOT</span> create new app.</p>
+                    <ul style="margin-left: 20px; font-size: 0.9rem; margin-top: 5px;">
+                        <li>Search original application.</li>
+                        <li>Edit Details.</li>
+                        <li>Click "+ Add more Stocks".</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-panel" id="status">
+            <h2><i class="fas fa-search"></i> Status & Editing</h2>
+            
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Status</th>
+                            <th>Meaning</th>
+                            <th>Edit Access</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><span class="badge bg-yet">YET</span></td>
+                            <td>Not secured. Car is available.</td>
+                            <td>✅ Staff can edit</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge bg-sold">SOLD</span></td>
+                            <td>Secured by another customer.</td>
+                            <td>✅ Staff (Swap car only)</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge bg-mix">MIX</span></td>
+                            <td>Multiple cars involved (some sold).</td>
+                            <td>✅ Staff (Sold units only)</td>
+                        </tr>
+                        <tr>
+                            <td><span class="badge bg-ok">OK</span></td>
+                            <td>Secured by you. Locked.</td>
+                            <td>🚫 Admin Only</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="alert alert-warning">
+                <i class="fas fa-clock"></i>
+                <div>
+                    <strong>CRITICAL: Changing Stocks & Time Priority</strong><br>
+                    If you amend a Stock No., the <em>Stock Application Time</em> resets to NOW. You will lose your original priority queue position.
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-panel" id="faq">
+            <h2><i class="fas fa-comments"></i> FAQ</h2>
+            
+            <div class="accordion-item">
+                <div class="accordion-header">
+                    Can I upload a SWIFT copy as my main TT Copy?
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="accordion-body">
+                    <strong>No.</strong> SWIFT copies are only for the "Supporting Documents" section. For the main TT/OK hold, you must use the remittance slip or the detailed online banking report.
+                </div>
+            </div>
+
+            <div class="accordion-item">
+                <div class="accordion-header">
+                    Can I submit one TT Copy for multiple cars?
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="accordion-body">
+                    <strong>Yes.</strong> Use the "+ Add more Stocks" button within the single application. Do not create separate applications for the same slip.
+                </div>
+            </div>
+
+            <div class="accordion-item">
+                <div class="accordion-header">
+                    What if the transfer amount is less than the deposit?
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+                <div class="accordion-body">
+                    The application will be registered, but the unit will remain in pending status. It will not switch to "TT/OK YES" until the minimum requirement is met via a top-up.
+                </div>
+            </div>
+        </div>
+
+        <div class="glass-panel" id="guidelines">
+            <h2><i class="fas fa-check-double"></i> Photo Guidelines</h2>
+            <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: center;">
+                <div style="flex: 1; min-width: 300px;">
+                    <p>To avoid rejection, ensure your upload clearly displays:</p>
+                    <ul style="list-style: none; margin-top: 1rem;">
+                        <li style="margin-bottom: 10px;"><i class="fas fa-check-circle" style="color: var(--badge-ok);"></i> Sender's Name</li>
+                        <li style="margin-bottom: 10px;"><i class="fas fa-check-circle" style="color: var(--badge-ok);"></i> Transfer Amount</li>
+                        <li style="margin-bottom: 10px;"><i class="fas fa-check-circle" style="color: var(--badge-ok);"></i> Invoice Number</li>
+                        <li style="margin-bottom: 10px;"><i class="fas fa-check-circle" style="color: var(--badge-ok);"></i> Bank Receipt Stamp & Date</li>
+                    </ul>
+                </div>
+                <div style="flex: 1; background: #eee; padding: 2rem; border-radius: 12px; text-align: center; color: #888;">
+                    <i class="fas fa-image" style="font-size: 3rem; margin-bottom: 10px;"></i>
+                    <p>Sample Receipt Preview</p>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
     <script>
-        // ============================================
-        // 1. DATA MATRIX
-        // ============================================
-        const db = [
-            // EAST (Mombasa/Dar)
-            { id: 'ke', name: 'KENYA', flag: '🇰🇪', port: 'MOMBASA', node: 'node-east', line: 'line-east', inspect: 'QISJ', sail: 30, inland: 0, total: 55 },
-            { id: 'tz', name: 'TANZANIA', flag: '🇹🇿', port: 'DAR ES SALAAM', node: 'node-east', line: 'line-east', inspect: 'EAA', sail: 30, inland: 0, total: 55 },
-            { id: 'ug', name: 'UGANDA', flag: '🇺🇬', port: 'MOMBASA', node: 'node-east', line: 'line-east', inspect: 'EAA', sail: 30, inland: 15, total: 70 },
-            { id: 'ss', name: 'S. SUDAN', flag: '🇸🇸', port: 'MOMBASA', node: 'node-east', line: 'line-east', inspect: 'EAA', sail: 30, inland: 25, total: 85 },
-            
-            // SOUTH-CENTRAL (Dar/Maputo)
-            { id: 'zm', name: 'ZAMBIA', flag: '🇿🇲', port: 'DAR ES SALAAM', node: 'node-east', line: 'line-east', inspect: 'Optional', sail: 35, inland: 20, total: 80 },
-            { id: 'mz', name: 'MOZAMBIQUE', flag: '🇲🇿', port: 'MAPUTO', node: 'node-maputo', line: 'line-maputo', inspect: 'None', sail: 40, inland: 0, total: 90 },
-
-            // SOUTH (Durban)
-            { id: 'zw', name: 'ZIMBABWE', flag: '🇿🇼', port: 'DURBAN', node: 'node-durban', line: 'line-south', inspect: 'Optional', sail: 35, inland: 15, total: 80 },
-            { id: 'bw', name: 'BOTSWANA', flag: '🇧🇼', port: 'DURBAN', node: 'node-durban', line: 'line-south', inspect: 'None', sail: 35, inland: 10, total: 65 },
-
-            // WEST (Tema/Walvis)
-            { id: 'na', name: 'NAMIBIA', flag: '🇳🇦', port: 'WALVIS BAY', node: 'node-walvis', line: 'line-sw', inspect: 'None', sail: 45, inland: 0, total: 60 },
-            { id: 'gh', name: 'GHANA', flag: '🇬🇭', port: 'TEMA', node: 'node-tema', line: 'line-west', inspect: 'None', sail: 50, inland: 0, total: 90 },
-        ];
-
-        // ============================================
-        // 2. INITIALIZE
-        // ============================================
-        const sel = document.getElementById('countrySelect');
-        const grid = document.getElementById('cardGrid');
-
-        // Populate Select & Grid
-        db.sort((a,b) => a.name.localeCompare(b.name)).forEach((c, idx) => {
-            // Select Option
-            let opt = document.createElement('option');
-            opt.value = c.id;
-            opt.innerText = c.name;
-            sel.appendChild(opt);
-
-            // Card
-            let card = document.createElement('div');
-            card.className = 'info-card';
-            card.style.animationDelay = (idx * 0.05) + 's';
-            
-            // Inspection Badge Color
-            let tagClass = 'tag-gray';
-            if(c.inspect === 'QISJ') tagClass = 'tag-red';
-            if(c.inspect === 'EAA') tagClass = 'tag-amber';
-
-            card.innerHTML = `
-                <div class="card-top">
-                    <span class="card-flag">${c.flag}</span>
-                    <span class="card-code">${c.name}</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-lbl">MAIN PORT</span>
-                    <span class="stat-val text-blue">${c.port}</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-lbl">INSPECTION</span>
-                    <span class="tag ${tagClass}">${c.inspect}</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-lbl">INLAND TRANSIT</span>
-                    <span class="stat-val">${c.inland > 0 ? c.inland + ' DAYS' : 'PORT ONLY'}</span>
-                </div>
-                <div class="stat-row" style="margin-top:10px; padding-top:10px; border-top:1px solid rgba(255,255,255,0.05)">
-                    <span class="stat-lbl">TOTAL BUFFER</span>
-                    <span class="stat-val text-cyan" style="font-size:1rem;">${c.total} DAYS</span>
-                </div>
-            `;
-            grid.appendChild(card);
-        });
-
-        // ============================================
-        // 3. SIMULATION ENGINE
-        // ============================================
-        function runSimulation() {
-            const id = sel.value;
-            const arrival = document.getElementById('arrivalDate').value;
-            const data = db.find(x => x.id === id);
-            
-            if(!data) return;
-
-            // A. VISUALIZER: Reset
-            document.querySelectorAll('.route-line').forEach(l => l.classList.remove('active'));
-            document.querySelectorAll('.node').forEach(n => n.classList.remove('active'));
-            
-            // B. VISUALIZER: Activate Path
-            document.getElementById('line-ocean').classList.add('active'); // Always active
-            document.getElementById(data.line).classList.add('active');    // Specific Route
-            
-            // Activate Destination Node
-            setTimeout(() => {
-                document.getElementById(data.node).classList.add('active');
-            }, 300);
-
-            // C. TIMELINE DATA
-            // Inspection
-            const elInspect = document.getElementById('step-inspect');
-            const txtInspect = document.getElementById('txt-inspect');
-            const dayInspect = document.getElementById('day-inspect');
-            
-            if(data.inspect === 'None') {
-                elInspect.classList.remove('active');
-                txtInspect.innerText = "NOT REQUIRED";
-                dayInspect.innerText = "--";
-                dayInspect.style.color = "#555";
-            } else {
-                elInspect.classList.add('active');
-                txtInspect.innerText = `REQUIRED (${data.inspect})`;
-                dayInspect.innerText = "7-14 D";
-                dayInspect.style.color = "var(--neon-amber)";
-            }
-
-            // Sailing
-            document.getElementById('day-sail').innerText = `~${data.sail} D`;
-
-            // Inland
-            const elInland = document.getElementById('step-inland');
-            const dayInland = document.getElementById('day-inland');
-            if(data.inland > 0) {
-                elInland.classList.add('active');
-                dayInland.innerText = `+${data.inland} DAYS`;
-                dayInland.style.color = "var(--neon-blue)";
-            } else {
-                elInland.classList.remove('active');
-                dayInland.innerText = "PORT CLEARANCE";
-                dayInland.style.color = "#555";
-            }
-
-            // Total
-            document.getElementById('day-total').innerText = `${data.total} DAYS`;
-            document.getElementById('routeText').innerText = `ROUTING: JAPAN >> ${data.port}`;
-
-            // D. CALCULATE DATE
-            if(arrival) {
-                const arrDate = new Date(arrival);
-                const safeDate = new Date(arrDate);
-                safeDate.setDate(arrDate.getDate() - data.total);
-                
-                document.getElementById('resDate').innerText = safeDate.toLocaleDateString('en-GB', {day:'numeric', month:'short'}).toUpperCase();
-                document.getElementById('resNote').innerText = `BUY BY THIS DATE (${data.total} DAY BUFFER)`;
-                document.getElementById('resNote').style.color = "var(--neon-cyan)";
-            }
+        // Toggle Mobile Menu
+        function toggleMenu() {
+            document.getElementById('sidebar').classList.toggle('active');
         }
 
-        console.log("VORTEX SYSTEM: INITIALIZED");
+        // Accordion Logic
+        const accordions = document.querySelectorAll('.accordion-header');
+        accordions.forEach(acc => {
+            acc.addEventListener('click', function() {
+                const item = this.parentElement;
+                item.classList.toggle('active');
+            });
+        });
+
+        // Intersection Observer for Scroll Animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                }
+            });
+        }, { threshold: 0.1 });
+
+        document.querySelectorAll('.glass-panel').forEach(panel => {
+            observer.observe(panel);
+        });
+
+        // Active Link Switching on Scroll
+        const sections = document.querySelectorAll('div[id]');
+        const navLinks = document.querySelectorAll('.nav-links a');
+
+        window.addEventListener('scroll', () => {
+            let current = '';
+            sections.forEach(section => {
+                const sectionTop = section.offsetTop;
+                const sectionHeight = section.clientHeight;
+                if (pageYOffset >= (sectionTop - 200)) {
+                    current = section.getAttribute('id');
+                }
+            });
+
+            navLinks.forEach(a => {
+                a.classList.remove('active');
+                if (a.getAttribute('href').includes(current)) {
+                    a.classList.add('active');
+                }
+            });
+        });
     </script>
 </body>
 </html>
+```
